@@ -1214,6 +1214,8 @@ function openStats() {
 // ── Language ──────────────────────────────────
 function setLang(l) {
   lang = l;
+
+  
   document.querySelectorAll(".lang-btn").forEach(b => {
     b.classList.toggle("active", b.dataset.lang === l);
   });
@@ -1261,5 +1263,6 @@ songInput.addEventListener("keydown", e => {
   else if (e.key === "Escape") hideAC();
 });
 </script>
+  <script src="database.js"></script>
 </body>
 </html>

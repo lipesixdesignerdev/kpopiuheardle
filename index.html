@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IU Heardle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0d0b12;
+    --card:    #1a1625;
+    --border:  #2e2840;
+    --accent:  #e879a0;
+    --accent2: #c084fc;
+    --correct: #4ade80;
+    --wrong:   #f87171;
+    --skip:    #facc15;
+    --text:    #f5f0ff;
+    --muted:   #7a6e90;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 60px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Ambient glow background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: 50%;
+    transform: translateX(-50%);
+    width: 700px; height: 700px;
+    background: radial-gradient(ellipse, rgba(232,121,160,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 520px;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 0 0;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px;
+    margin-bottom: 0;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .logo-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1.5px solid var(--accent);
+    flex-shrink: 0;
+  }
+
+  .logo-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  .logo-text { display: flex; align-items: baseline; gap: 4px; }
+  .logo-iu { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--accent); font-weight: 700; }
+  .logo-heardle { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--text); font-weight: 400; }
+
+  .header-actions { display: flex; align-items: center; gap: 6px; }
+
+  .lang-switcher {
+    display: flex;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .lang-btn {
+    background: none; border: none; color: var(--muted);
+    font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 600;
+    padding: 4px 7px; cursor: pointer; transition: color .2s, background .2s;
+  }
+  .lang-btn:hover, .lang-btn.active { color: var(--accent); background: var(--border); }
+
+  .icon-btn {
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--muted); font-size: 14px; padding: 5px 9px;
+    border-radius: 6px; cursor: pointer; transition: color .2s, background .2s;
+  }
+  .icon-btn:hover { color: var(--text); background: var(--border); }
+
+  /* ── Guess Bars ── */
+  .bars {
+    display: flex;
+    gap: 5px;
+    margin: 18px 0 0;
+  }
+
+  .bar {
+    flex: 1; height: 7px;
+    border-radius: 4px;
+    background: var(--border);
+    transition: background .4s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bar.correct { background: var(--correct); }
+  .bar.wrong   { background: var(--wrong); }
+  .bar.skipped { background: var(--skip); }
+  .bar.active  { background: var(--border); }
+  .bar.active::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(232,121,160,.5), transparent);
+    animation: shimmer 1.4s infinite;
+  }
+
+  @keyframes shimmer {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* ── Player Card ── */
+  .player-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Waveform */
+  .waveform {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 44px;
+  }
+
+  .wave-bar {
+    width: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    transition: height .15s ease, background .3s;
+  }
+
+  .waveform.playing .wave-bar {
+    background: var(--accent);
+    animation: wave-anim var(--dur, 0.6s) ease-in-out infinite alternate;
+    animation-delay: var(--delay, 0s);
+  }
+
+  @keyframes wave-anim {
+    0%   { height: 4px; }
+    100% { height: var(--peak, 28px); }
+  }
+
+  /* Play button */
+  .play-btn {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none; color: white;
+    font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s, transform .15s, box-shadow .2s;
+    box-shadow: 0 4px 20px rgba(232,121,160,.4);
+  }
+
+  .play-btn:hover  { background: var(--accent2); transform: scale(1.06); box-shadow: 0 6px 24px rgba(192,132,252,.5); }
+  .play-btn:active { transform: scale(.97); }
+  .play-btn.playing { background: var(--accent2); }
+
+  /* Volume */
+  .volume-row {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+  }
+
+  .volume-row span { color: var(--muted); font-size: 13px; flex-shrink: 0; }
+
+  input[type=range] {
+    flex: 1; -webkit-appearance: none;
+    height: 4px; background: var(--border); border-radius: 2px; cursor: pointer;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px;
+    border-radius: 50%; background: var(--accent); cursor: pointer;
+    box-shadow: 0 0 6px rgba(232,121,160,.6);
+  }
+
+  /* Status */
+  .status-text {
+    font-size: 12px; color: var(--muted); text-align: center;
+    min-height: 16px;
+  }
+
+  /* Timer bar */
+  .timer-wrap { width: 100%; }
+
+  .timer-track {
+    width: 100%; height: 5px; background: var(--border);
+    border-radius: 3px; overflow: hidden;
+  }
+
+  .timer-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 3px;
+    width: 0%;
+    transition: width .1s linear;
+  }
+
+  .timer-label {
+    font-size: 11px; color: var(--muted); text-align: right;
+    margin-top: 4px;
+  }
+
+  /* ── Guesses List ── */
+  .guesses-list { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+
+  .guess-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
+    font-size: 13px;
+    animation: slide-in .25s ease;
+  }
+
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .guess-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+
+  .guess-dot.correct { background: var(--correct); box-shadow: 0 0 8px var(--correct); }
+  .guess-dot.wrong   { background: var(--wrong); }
+  .guess-dot.skipped { background: var(--skip); }
+
+  .guess-text { flex: 1; color: var(--text); }
+  .guess-badge {
+    font-size: 10px; font-weight: 600; padding: 2px 7px;
+    border-radius: 4px; flex-shrink: 0;
+  }
+
+  .guess-badge.correct { background: rgba(74,222,128,.15); color: var(--correct); }
+  .guess-badge.wrong   { background: rgba(248,113,113,.15); color: var(--wrong); }
+  .guess-badge.skipped { background: rgba(250,204,21,.15); color: var(--skip); }
+
+  /* ── Input ── */
+  .input-section { margin-top: 14px; position: relative; }
+
+  .song-input {
+    width: 100%;
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+    padding: 12px 14px; border-radius: 10px; outline: none;
+    transition: border-color .2s;
+  }
+
+  .song-input:focus { border-color: var(--accent); }
+  .song-input::placeholder { color: var(--muted); }
+
+  /* Autocomplete */
+  .autocomplete {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; z-index: 100;
+    max-height: 220px; overflow-y: auto;
+    display: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  }
+
+  .autocomplete.show { display: block; }
+
+  .ac-item {
+    padding: 10px 14px; font-size: 13px; cursor: pointer;
+    transition: background .15s;
+    border-bottom: 1px solid rgba(46,40,64,.5);
+  }
+
+  .ac-item:last-child { border-bottom: none; }
+  .ac-item:hover, .ac-item.selected { background: var(--border); color: var(--accent); }
+
+  /* ── Button Row ── */
+  .btn-row {
+    display: flex; gap: 8px; margin-top: 10px;
+  }
+
+  .btn {
+    flex: 1; padding: 13px; border: none; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: background .2s, transform .1s, opacity .2s;
+  }
+
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+  .btn-skip {
+    background: var(--card); color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-skip:hover:not(:disabled) { background: var(--border); color: var(--text); }
+
+  .btn-confirm {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    box-shadow: 0 3px 14px rgba(232,121,160,.35);
+  }
+
+  .btn-confirm:hover:not(:disabled) { box-shadow: 0 5px 18px rgba(232,121,160,.5); }
+
+  /* ── Result Screen ── */
+  .result-screen {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    z-index: 200;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 0 24px 40px;
+    overflow-y: auto;
+    opacity: 0; pointer-events: none;
+    transition: opacity .4s ease;
+  }
+
+  .result-screen.show {
+    opacity: 1; pointer-events: all;
+  }
+
+  .result-topbar {
+    display: flex; justify-content: flex-end;
+    width: 100%; max-width: 520px;
+    padding-top: 20px;
+  }
+
+  .result-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 700;
+    margin-top: 20px; text-align: center;
+  }
+
+  .result-title.won  { color: var(--correct); }
+  .result-title.lost { color: var(--wrong); }
+
+  .album-art {
+    width: 220px; height: 220px;
+    border-radius: 14px;
+    object-fit: cover;
+    margin-top: 22px;
+    box-shadow: 0 16px 48px rgba(0,0,0,.6);
+    border: 1px solid var(--border);
+    background: var(--card);
+  }
+
+  .album-art-placeholder {
+    width: 220px; height: 220px;
+    border-radius: 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    margin-top: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px;
+  }
+
+  .result-song-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; font-weight: 700;
+    color: var(--accent); text-align: center;
+    margin-top: 16px;
+  }
+
+  .result-artist {
+    font-size: 14px; color: var(--text); margin-top: 6px; text-align: center;
+  }
+
+  .result-album {
+    font-size: 12px; color: var(--muted); margin-top: 4px; text-align: center;
+  }
+
+  .result-play-btn {
+    margin-top: 20px;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none; color: white;
+    font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s, transform .15s;
+    box-shadow: 0 4px 20px rgba(232,121,160,.4);
+  }
+
+  .result-play-btn:hover { background: var(--accent2); transform: scale(1.06); }
+
+  .result-play-status {
+    font-size: 12px; color: var(--muted); margin-top: 8px; text-align: center;
+  }
+
+  .btn-again {
+    margin-top: 24px;
+    padding: 14px 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white; border: none; border-radius: 12px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+    cursor: pointer; box-shadow: 0 4px 18px rgba(232,121,160,.4);
+    transition: box-shadow .2s, transform .1s;
+  }
+
+  .btn-again:hover { box-shadow: 0 6px 24px rgba(232,121,160,.6); transform: scale(1.02); }
+
+  /* Result guess bars */
+  .result-bars {
+    display: flex; gap: 5px; margin-top: 18px; width: 100%; max-width: 400px;
+  }
+
+  /* ── Stats Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.7);
+    z-index: 300; display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .3s;
+  }
+
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px; width: 340px; max-width: 90vw;
+    transform: translateY(20px); transition: transform .3s;
+  }
+
+  .modal-overlay.show .modal { transform: translateY(0); }
+
+  .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px; color: var(--text); margin-bottom: 20px; text-align: center;
+  }
+
+  .stats-row {
+    display: flex; gap: 8px; margin-bottom: 20px;
+  }
+
+  .stat-box {
+    flex: 1; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 8px; text-align: center;
+  }
+
+  .stat-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; color: var(--accent); font-weight: 700;
+    display: block;
+  }
+
+  .stat-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; display: block; }
+
+  .dist-label { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+
+  .dist-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+  }
+
+  .dist-key { font-size: 11px; color: var(--muted); width: 16px; flex-shrink: 0; text-align: center; }
+
+  .dist-track {
+    flex: 1; height: 20px; background: var(--border);
+    border-radius: 4px; overflow: hidden; position: relative;
+  }
+
+  .dist-fill {
+    height: 100%; border-radius: 4px;
+    display: flex; align-items: center; justify-content: flex-end;
+    padding-right: 6px;
+    font-size: 10px; font-weight: 600; color: white;
+    min-width: 28px;
+    transition: width .6s ease;
+  }
+
+  .dist-fill.correct-fill { background: var(--correct); }
+  .dist-fill.wrong-fill   { background: var(--wrong); }
+
+  .modal-close {
+    display: block; width: 100%; margin-top: 18px;
+    padding: 10px; background: var(--bg); border: 1px solid var(--border);
+    color: var(--muted); border-radius: 8px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    transition: background .2s, color .2s;
+  }
+
+  .modal-close:hover { background: var(--border); color: var(--text); }
+
+  /* Scrollbar */
+  .autocomplete::-webkit-scrollbar { width: 5px; }
+  .autocomplete::-webkit-scrollbar-track { background: var(--card); }
+  .autocomplete::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 420px) {
+    .logo-iu, .logo-heardle { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <div class="logo-avatar">
+        <img src="avatar.png" onerror="this.parentElement.style.background='#2e2840';this.style.display='none'" alt="IU">
+      </div>
+      <div class="logo-text">
+        <span class="logo-iu">IU</span>
+        <span class="logo-heardle"> Heardle</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="PT">PT</button>
+        <button class="lang-btn" data-lang="EN">EN</button>
+        <button class="lang-btn" data-lang="ES">ES</button>
+      </div>
+      <button class="icon-btn" id="statsBtn">📊</button>
+      <button class="icon-btn" id="newBtn">🔄</button>
+    </div>
+  </header>
+
+  <!-- Guess Bars -->
+  <div class="bars" id="barsContainer"></div>
+
+  <!-- Player Card -->
+  <div class="player-card">
+    <div class="waveform" id="waveform"></div>
+
+    <button class="play-btn" id="playBtn">▶</button>
+
+    <div class="volume-row">
+      <span>🔈</span>
+      <input type="range" id="volSlider" min="0" max="100" value="80">
+      <span>🔊</span>
+    </div>
+
+    <p class="status-text" id="statusText">Pronto! Clique ▶</p>
+
+    <div class="timer-wrap">
+      <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+      <div class="timer-label" id="timerLabel">0.0s / 1s</div>
+    </div>
+  </div>
+
+  <!-- Guesses List -->
+  <div class="guesses-list" id="guessesList"></div>
+
+  <!-- Input -->
+  <div class="input-section" id="inputSection">
+    <input class="song-input" type="text" id="songInput" placeholder="seu palpite aqui…" autocomplete="off">
+    <div class="autocomplete" id="autocomplete"></div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="btn-row" id="btnRow">
+    <button class="btn btn-skip" id="skipBtn">⏭ Skip (+1s)</button>
+    <button class="btn btn-confirm" id="confirmBtn">✓ Confirmar</button>
+  </div>
+
+</div>
+
+<!-- Result Screen -->
+<div class="result-screen" id="resultScreen">
+  <div style="width:100%;max-width:520px">
+    <div class="result-topbar">
+      <button class="icon-btn" id="resultNewBtn">🔄 Novo</button>
+    </div>
+  </div>
+  <h2 class="result-title" id="resultTitle"></h2>
+  <div class="result-bars" id="resultBars"></div>
+  <img class="album-art" id="albumArt" src="" alt="" style="display:none">
+  <div class="album-art-placeholder" id="albumPlaceholder">🎵</div>
+  <p class="result-song-name" id="resultSongName"></p>
+  <p class="result-artist">IU</p>
+  <p class="result-album" id="resultAlbum"></p>
+  <button class="result-play-btn" id="resultPlayBtn">▶</button>
+  <p class="result-play-status" id="resultPlayStatus"></p>
+  <button class="btn-again" id="againBtn">🔄 Jogar Novamente</button>
+</div>
+
+<!-- Stats Modal -->
+<div class="modal-overlay" id="statsModal">
+  <div class="modal">
+    <h3 class="modal-title">📊 <span id="statsModalTitle">Estatísticas</span></h3>
+    <div class="stats-row">
+      <div class="stat-box"><span class="stat-val" id="sPlayed">0</span><span class="stat-lbl" id="sPlayedLbl">Jogados</span></div>
+      <div class="stat-box"><span class="stat-val" id="sWinRate">0%</span><span class="stat-lbl" id="sWinLbl">Vitórias</span></div>
+      <div class="stat-box"><span class="stat-val" id="sStreak">0</span><span class="stat-lbl" id="sStreakLbl">Sequência</span></div>
+      <div class="stat-box"><span class="stat-val" id="sMax">0</span><span class="stat-lbl" id="sMaxLbl">Máx</span></div>
+    </div>
+    <p class="dist-label" id="sDistLbl">Distribuição de tentativas</p>
+    <div id="distChart"></div>
+    <button class="modal-close" id="statsClose">Fechar</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// SONGS LIST
+// ══════════════════════════════════════════════
+const SONGS = [
+  {title:"23cm",file:"23cm.mp3",start:0},
+  {title:"above the time",file:"above the time (시간의 바깥).mp3",start:0},
+  {title:"Against the Wind (feat. Lee Juck)",file:"Against the Wind (feat. Lee Juck) (바람이 불어오는 곳 (feat. 이적)).mp3",start:0},
+  {title:"Ah puh",file:"Ah puh.mp3",start:0},
+  {title:"Always With You",file:"Always With You (항상이라는 말).mp3",start:0},
+  {title:"Autumn morning",file:"Autumn morning (가을 아침).mp3",start:0},
+  {title:"Bbibbi",file:"Bbibbi (삐삐).mp3",start:0},
+  {title:"Because",file:"Because (By my side_Because (곁에 있다는 것_Because)).mp3",start:0},
+  {title:"Blueming",file:"Blueming (블루밍).mp3",start:0},
+  {title:"Boom Boom Bass",file:"Boom Boom Bass (붐붐바).mp3",start:0},
+  {title:"Can't Love You Anymore (feat. Oh Hyuk)",file:"Can't Love You Anymore (feat. Oh Hyuk) (이 지금 (feat. 오혁)).mp3",start:0},
+  {title:"Celebrity",file:"Celebrity.mp3",start:0},
+  {title:"Chain of Events",file:"Chain of Events (연속 사건).mp3",start:0},
+  {title:"Cheap Coffee",file:"Cheap Coffee (싸구려 커피).mp3",start:0},
+  {title:"Cherries fall",file:"Cherries fall (내 손을 잡아 (내가 너의 곁에 잠시 살았다는 것)).mp3",start:0},
+  {title:"Child Of Fantasy",file:"Child Of Fantasy.mp3",start:0},
+  {title:"Cityscape",file:"Cityscape (어느새 이렇게).mp3",start:0},
+  {title:"Close",file:"Close (가까이 오세요).mp3",start:0},
+  {title:"Cloudy Day",file:"Cloudy Day (흐린 날).mp3",start:0},
+  {title:"Coin",file:"Coin.mp3",start:0},
+  {title:"Cruel Fairy Tale",file:"Cruel Fairy Tale (잔혹한 동화).mp3",start:0},
+  {title:"Curtain Call",file:"Curtain Call.mp3",start:0},
+  {title:"Dear Name",file:"Dear Name (이름에게).mp3",start:0},
+  {title:"Deep Blue Sorrow",file:"Deep Blue Sorrow (깊은 슬픔).mp3",start:0},
+  {title:"Dlwlrma",file:"Dlwlrma (을의 恋愛).mp3",start:0},
+  {title:"Drama",file:"Drama.mp3",start:0},
+  {title:"Drawers",file:"Drawers (서랍).mp3",start:0},
+  {title:"Dreaming",file:"Dreaming.mp3",start:0},
+  {title:"eight (feat. Suga of BTS)",file:"eight (feat. Suga of BTS) (에잇 (feat. BTS 슈가)).mp3",start:0},
+  {title:"Elevator (feat. G.Soul)",file:"Elevator (feat. G.Soul) (엘리베이터 (feat. G.Soul)).mp3",start:0},
+  {title:"Epilogue",file:"Epilogue (에필로그).mp3",start:0},
+  {title:"Every End of the Day",file:"Every End of the Day (하루 끝).mp3",start:0},
+  {title:"Everything's Alright (feat. Kim Hyun-Cheol)",file:"Everything's Alright (feat. Kim Hyun-Cheol) (Everything's Allright (feat. 김현철)).mp3",start:0},
+  {title:"Face To Face (After Looking At)",file:"Face To Face (After Looking At) (마주보기 (바라보기 그 후)).mp3",start:0},
+  {title:"Fairytale",file:"Fairytale.mp3",start:0},
+  {title:"Feel So Good",file:"Feel So Good (Feel So Good).mp3",start:0},
+  {title:"first love",file:"first love (첫사랑이죠).mp3",start:0},
+  {title:"Flower",file:"Flower (꽃).mp3",start:0},
+  {title:"Flu",file:"Flu (Flu).mp3",start:0},
+  {title:"Follow The Moon",file:"Follow The Moon.mp3",start:0},
+  {title:"Four Without Me",file:"Four Without Me (나 말고 넷).mp3",start:0},
+  {title:"Friday (feat. Jang Yi-jeong)",file:"Friday (feat.Jang Yi-jeong) (금요일에 만나요 (feat.장이정 of HISTORY)).mp3",start:0},
+  {title:"Full Stop",file:"Full Stop (마침표).mp3",start:0},
+  {title:"Glasses",file:"Glasses (안경).mp3",start:0},
+  {title:"Good Day",file:"Good day (좋은 날).mp3",start:0},
+  {title:"Good Day (Japanese Version)",file:"Good Day (Japanese Version).mp3",start:0},
+  {title:"Graduation Day",file:"Graduation Day (졸업하는 날).mp3",start:0},
+  {title:"Havana",file:"Havana (Havana).mp3",start:0},
+  {title:"heart",file:"heart (마음).mp3",start:0},
+  {title:"heart beating date",file:"heart beating date (두근 두근 데이트).mp3",start:0},
+  {title:"Hi spring Bye",file:"Hi spring Bye (봄 안녕 봄).mp3",start:0},
+  {title:"Holding A Star In My Heart (feat. Kim Gwang-Jin)",file:"Holding A Star In My Heart (feat. Kim Gwang-Jin) (별을 찾는 아이 (feat. 김광진)).mp3",start:0},
+  {title:"Holssi",file:"Holssi (홀씨).mp3",start:0},
+  {title:"I stan U",file:"I stan U (관객이 될게 (I stan U)).mp3",start:0},
+  {title:"In a room alone",file:"In a room alone (혼자 있는 방).mp3",start:0},
+  {title:"Jam Jam",file:"Jam Jam (잼잼).mp3",start:0},
+  {title:"Knees",file:"Knees (무릎).mp3",start:0},
+  {title:"L'amant",file:"L'amant (라망 (L'amant)).mp3",start:0},
+  {title:"Last Fantasy",file:"Last Fantasy (Last Fantasy).mp3",start:0},
+  {title:"Last night story",file:"Last night story (어젯밤 이야기).mp3",start:0},
+  {title:"Last Scene (Feat. Wonstein)",file:"Last Scene (Feat. Wonstein) (Last Scene (Feat. 원슈타인)).mp3",start:0},
+  {title:"LILAC",file:"LILAC (라일락).mp3",start:0},
+  {title:"Looking at you",file:"Looking at you (바라보기).mp3",start:0},
+  {title:"lost child",file:"lost child (미아).mp3",start:0},
+  {title:"Love Alone",file:"Love Alone (그렇게 사랑은).mp3",start:0},
+  {title:"Love attack",file:"Love attack (LOVE ATTACK).mp3",start:0},
+  {title:"Love Letter",file:"Love Letter (러브레터).mp3",start:0},
+  {title:"Love of B",file:"Love of B (을의 연애).mp3",start:0},
+  {title:"Love poem",file:"Love poem (Love poem).mp3",start:0},
+  {title:"Love wins all",file:"Love wins all (Love wins all).mp3",start:0},
+  {title:"Lullaby",file:"Lullaby (자장가).mp3",start:0},
+  {title:"marshmallow",file:"marshmallow (마쉬멜로우).mp3",start:0},
+  {title:"Meaning of you (feat. Kim Chang-wan)",file:"Meaning of you (너의 의미 (feat. 김창완)).mp3",start:0},
+  {title:"Merry Christmas ahead (feat. Chundung)",file:"Merry Christmas ahead (feat.Chundung) (미리 메리 크리스마스 (feat.천둥 of MBLAQ)).mp3",start:0},
+  {title:"Midnight Walk",file:"Midnight Walk (밤 산책).mp3",start:0},
+  {title:"Modern Times",file:"Modern Times (Modern Times).mp3",start:0},
+  {title:"Monday Afternoon",file:"Monday Afternoon.mp3",start:0},
+  {title:"Mother Nature (H₂O)",file:"Mother Nature (H₂O) (Mother Nature (H₂O)).mp3",start:0},
+  {title:"My old story",file:"My old story (나의 옛날이야기).mp3",start:0},
+  {title:"My sea",file:"My sea (아이와 나의 바다).mp3",start:0},
+  {title:"Never Ending Story",file:"Never Ending Story (Never Ending Story).mp3",start:0},
+  {title:"New World",file:"New World.mp3",start:0},
+  {title:"Next Stop",file:"Next Stop (정거장).mp3",start:0},
+  {title:"Nitpicking",file:"Nitpicking (잔소리 (with 2AM 슬옹)).mp3",start:0},
+  {title:"Not like this",file:"Not like this (이게 아닌데).mp3",start:0},
+  {title:"Obliviate",file:"Obliviate (OBLIVIATE).mp3",start:0},
+  {title:"October 4th",file:"October 4th (10월 4일).mp3",start:0},
+  {title:"Only I didn't know",file:"Only I didn't know (나만 몰랐던 이야기).mp3",start:0},
+  {title:"Palette (feat. G-DRAGON)",file:"Palette (feat. G-DRAGON) (팔레트 (feat. G-DRAGON)).mp3",start:0},
+  {title:"Peach",file:"Peach (복숭아).mp3",start:0},
+  {title:"Pierrot laughs at us",file:"Pierrot laughs at us (삐에로는 우릴 보고 웃지).mp3",start:0},
+  {title:"pitiful",file:"pitiful (가여워).mp3",start:0},
+  {title:"Rain Drop",file:"Rain Drop (Rain Drop).mp3",start:0},
+  {title:"Rain Drop (Japanese Version)",file:"Rain Drop (Japanese Version).mp3",start:0},
+  {title:"Red Queen (feat. Zion.T)",file:"Red Queen (feat.Zion.T) (RED QUEEN (FEAT. ZION.T)).mp3",start:0},
+  {title:"Red Sneakers",file:"Red Sneakers (빨간 운동화).mp3",start:0},
+  {title:"Scary Fairy Tale",file:"Scary Fairy Tale (잔혹동화).mp3",start:0},
+  {title:"Sea Of Moonlight",file:"Sea Of Moonlight (달빛바다).mp3",start:0},
+  {title:"Secret",file:"Secret (비밀).mp3",start:0},
+  {title:"Secret Garden",file:"Secret Garden (비밀의 화원).mp3",start:0},
+  {title:"Shh.. (Feat. HYEIN, WONSUN JOE & Patti Kim)",file:"Shh.. (Feat. HYEIN, WONSUN JOE & Special Narr. Patti Kim) (Shh.. (Feat. 혜인(HYEIN), 조원선....mp3",start:0},
+  {title:"Shoes",file:"Shoes (새 신발).mp3",start:0},
+  {title:"Shopper",file:"Shopper (Shopper).mp3",start:0},
+  {title:"Shounen Jidai",file:"Shounen Jidai.mp3",start:0},
+  {title:"Sleeping Prince (feat. Yoon Sang)",file:"Sleeping Prince (feat. Yoon Sang) (잠자는 숲속의 왕자 (feat. 윤상)).mp3",start:0},
+  {title:"Sleepless rainy night",file:"Sleepless rainy night (잠 못 드는 밤 비는 내리고).mp3",start:0},
+  {title:"Sogyeokdong",file:"Sogyeokdong.mp3",start:0},
+  {title:"Someday",file:"Someday.mp3",start:0},
+  {title:"Square's dream",file:"Square's dream (네모의 꿈).mp3",start:0},
+  {title:"strawberry moon",file:"strawberry moon (strawberry moon).mp3",start:0},
+  {title:"Taking a train",file:"Taking a train (기차를 타고).mp3",start:0},
+  {title:"Teacher (feat. Ra.D)",file:"Teacher (feat. Ra.D) (Teacher (feat. Ra.D)).mp3",start:0},
+  {title:"Tear drops in the morning",file:"Tear drops in the morning (아침 눈물).mp3",start:0},
+  {title:"The Abandoned",file:"The Abandoned (길잃은 강아지).mp3",start:0},
+  {title:"The Age Of The Cathedrals",file:"The Age Of The Cathedrals.mp3",start:0},
+  {title:"The night of the first breakup",file:"The night of the first breakup (첫 이별 그날 밤).mp3",start:0},
+  {title:"The Red Shoes",file:"The Red Shoes (분홍신).mp3",start:0},
+  {title:"The shower",file:"The shower (푸르던).mp3",start:0},
+  {title:"The visitor",file:"The visitor (그 사람).mp3",start:0},
+  {title:"Through the Night",file:"Through the Night (밤편지).mp3",start:0},
+  {title:"Troll (Feat. DEAN)",file:"Troll (Feat. DEAN) (돌림노래 (Feat. DEAN)).mp3",start:0},
+  {title:"Truth",file:"Truth.mp3",start:0},
+  {title:"Twenty-three",file:"Twenty-three (스물셋).mp3",start:0},
+  {title:"ugly duckling",file:"ugly duckling (미운 오리).mp3",start:0},
+  {title:"Uncle (feat. Lee Juck)",file:"Uncle (feat. Lee Juck) (삼촌 (feat. 이적)).mp3",start:0},
+  {title:"unlucky",file:"unlucky (unlucky).mp3",start:0},
+  {title:"Voice-Mail",file:"Voice-Mail.mp3",start:0},
+  {title:"Wait",file:"Wait (기다려).mp3",start:0},
+  {title:"Walk with me, girl (feat. Choi Baek-ho)",file:"Walk with me, girl (feat. Choi Baek-ho) (아이야 나랑 걷자 (feat.최백호)).mp3",start:0},
+  {title:"Wallpaper Pattern",file:"Wallpaper Pattern (벽지무늬).mp3",start:0},
+  {title:"Well… (feat. Mario)",file:"Well… (feat. Mario) (있잖아 (feat. 마리오)).mp3",start:0},
+  {title:"What I'm doing slow",file:"What I'm doing slow (느리게 하는 일).mp3",start:0},
+  {title:"When love passes by",file:"When love passes by (사랑이 지나가면).mp3",start:0},
+  {title:"Winter Sleep",file:"Winter Sleep (겨울잠).mp3",start:0},
+  {title:"Wisdom Tooth",file:"Wisdom Tooth (사랑니).mp3",start:0},
+  {title:"You",file:"You (너).mp3",start:0},
+  {title:"YOU & I",file:"YOU & I (너랑 나).mp3",start:0},
+  {title:"You & I (Japanese Version)",file:"You & I (Japanese Version).mp3",start:0},
+  {title:"Zezé",file:"Zezé (ZEZE).mp3",start:0},
+];
+
+const DURATIONS = [1, 2, 4, 7, 11, 16];
+const MAX_GUESSES = 6;
+
+// ══════════════════════════════════════════════
+// TRANSLATIONS
+// ══════════════════════════════════════════════
+const LANGS = {
+  PT: {
+    title:"Ouça e adivinhe!", ready:"Pronto! Clique ▶", playing:"Tocando…",
+    paused:"Pausado — clique ▶ para ouvir de novo", full:"🎵 Ouça a música completa!",
+    done:"🎵 Fim da música", skip:"⏭ Skip (+1s)", confirm:"✓ Confirmar",
+    again:"🔄 Jogar Novamente", won:"🎉 Acertou!", lost:"😔 Não foi dessa vez!",
+    new:"Novo", skipped:"Skip", guess:"seu palpite aqui…",
+    stats:"Estatísticas", played:"Jogados", wins:"Vitórias", streak:"Sequência",
+    best:"Máx", dist:"Distribuição de tentativas", close:"Fechar",
+  },
+  EN: {
+    title:"Listen and guess!", ready:"Ready! Click ▶", playing:"Playing…",
+    paused:"Paused — click ▶ to listen again", full:"🎵 Listen to the full song!",
+    done:"🎵 End of song", skip:"⏭ Skip (+1s)", confirm:"✓ Confirm",
+    again:"🔄 Play Again", won:"🎉 Correct!", lost:"😔 Not this time!",
+    new:"New", skipped:"Skipped", guess:"your guess here…",
+    stats:"Statistics", played:"Played", wins:"Win Rate", streak:"Streak",
+    best:"Best", dist:"Try Distribution", close:"Close",
+  },
+  ES: {
+    title:"¡Escucha y adivina!", ready:"¡Listo! Haz clic ▶", playing:"Reproduciendo…",
+    paused:"Pausado — clic ▶ para escuchar de nuevo", full:"🎵 ¡Escucha la canción completa!",
+    done:"🎵 Fin de la canción", skip:"⏭ Saltar (+1s)", confirm:"✓ Confirmar",
+    again:"🔄 Jugar de Nuevo", won:"🎉 ¡Correcto!", lost:"😔 ¡La próxima vez!",
+    new:"Nuevo", skipped:"Saltado", guess:"tu respuesta aquí…",
+    stats:"Estadísticas", played:"Jugados", wins:"Victorias", streak:"Racha",
+    best:"Máx", dist:"Distribución", close:"Cerrar",
+  },
+};
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let lang = "PT";
+let currentSong = null;
+let attempt = 0;
+let guesses = [];
+let gameOver = false;
+let freePlay = false;
+let isPlaying = false;
+let audio = null;
+let timerInterval = null;
+let elapsed = 0;
+let acSel = -1;
+
+function t(k) { return (LANGS[lang] || LANGS.PT)[k] || k; }
+
+// ── Stats ─────────────────────────────────────
+function loadStats() {
+  try {
+    const s = JSON.parse(localStorage.getItem("iu_heardle_stats") || "null");
+    if (s) return s;
+  } catch(e) {}
+  return {played:0, wins:0, streak:0, max_streak:0, dist:[0,0,0,0,0,0,0]};
+}
+
+function saveStats(s) {
+  try { localStorage.setItem("iu_heardle_stats", JSON.stringify(s)); } catch(e) {}
+}
+
+function recordResult(won, att) {
+  const s = loadStats();
+  s.played++;
+  if (won) { s.wins++; s.streak++; if (s.streak > s.max_streak) s.max_streak = s.streak; s.dist[att-1]++; }
+  else { s.streak = 0; s.dist[6]++; }
+  saveStats(s);
+}
+
+// ── Song ─────────────────────────────────────
+function pickSong() {
+  currentSong = SONGS[Math.floor(Math.random() * SONGS.length)];
+}
+
+function loadAudio() {
+  if (audio) { audio.pause(); audio = null; }
+  audio = new Audio("songs/" + encodeURIComponent(currentSong.file));
+  audio.volume = document.getElementById("volSlider").value / 100;
+  audio.addEventListener("ended", () => { stopTimer(); setStatus(t("done")); setPlaying(false); });
+  audio.addEventListener("error", () => { setStatus("⚠️ Arquivo não encontrado"); });
+}
+
+// ── Timer ─────────────────────────────────────
+function startTimer(maxDuration) {
+  elapsed = 0;
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    elapsed += 0.1;
+    updateTimerUI(elapsed, maxDuration);
+    if (elapsed >= maxDuration && !freePlay) {
+      audio.pause();
+      stopTimer();
+      setStatus(t("paused"));
+      setPlaying(false);
+    }
+  }, 100);
+}
+
+function stopTimer() { clearInterval(timerInterval); timerInterval = null; }
+
+function updateTimerUI(e, max) {
+  const pct = Math.min(100, (e / max) * 100);
+  document.getElementById("timerFill").style.width = pct + "%";
+  document.getElementById("timerLabel").textContent = e.toFixed(1) + "s / " + max + "s";
+}
+
+// ── Waveform ─────────────────────────────────
+function buildWaveform() {
+  const wf = document.getElementById("waveform");
+  wf.innerHTML = "";
+  const NUM = 28;
+  const peaks = [6,10,16,22,28,24,18,28,22,14,10,20,26,28,20,16,24,28,18,12,22,28,24,16,10,18,24,14];
+  for (let i = 0; i < NUM; i++) {
+    const b = document.createElement("div");
+    b.className = "wave-bar";
+    b.style.height = "4px";
+    b.style.setProperty("--peak", peaks[i] + "px");
+    b.style.setProperty("--dur", (0.4 + Math.random() * 0.4).toFixed(2) + "s");
+    b.style.setProperty("--delay", (i * 0.03).toFixed(2) + "s");
+    wf.appendChild(b);
+  }
+}
+
+function setPlaying(p) {
+  isPlaying = p;
+  const btn = document.getElementById("playBtn");
+  const wf  = document.getElementById("waveform");
+  btn.textContent = p ? "⏸" : "▶";
+  btn.classList.toggle("playing", p);
+  wf.classList.toggle("playing", p);
+}
+
+// ── Play ─────────────────────────────────────
+function handlePlay() {
+  if (!audio) return;
+  if (isPlaying) {
+    audio.pause();
+    stopTimer();
+    setStatus(t("paused"));
+    setPlaying(false);
+    return;
+  }
+  const maxDur = freePlay ? Infinity : DURATIONS[Math.min(attempt, DURATIONS.length - 1)];
+  audio.currentTime = currentSong.start || 0;
+  audio.play().then(() => {
+    setStatus(t("playing"));
+    setPlaying(true);
+    if (!freePlay) startTimer(maxDur);
+    else {
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        updateTimerUI(audio.currentTime, audio.duration || 1);
+      }, 100);
+    }
+  }).catch(() => setStatus("⚠️ Erro ao reproduzir — verifique o arquivo"));
+}
+
+function handleResultPlay() {
+  if (!audio) return;
+  if (isPlaying) {
+    audio.pause();
+    stopTimer();
+    document.getElementById("resultPlayBtn").textContent = "▶";
+    document.getElementById("resultPlayStatus").textContent = "";
+    setPlaying(false);
+    return;
+  }
+  audio.currentTime = 0;
+  audio.play().then(() => {
+    setPlaying(true);
+    document.getElementById("resultPlayBtn").textContent = "⏸";
+    document.getElementById("resultPlayStatus").textContent = t("playing");
+    timerInterval = setInterval(() => {
+      if (audio.ended || audio.paused) {
+        document.getElementById("resultPlayBtn").textContent = "▶";
+        document.getElementById("resultPlayStatus").textContent = t("done");
+        stopTimer(); setPlaying(false);
+      }
+    }, 200);
+  }).catch(() => {});
+}
+
+// ── Status ────────────────────────────────────
+function setStatus(msg) { document.getElementById("statusText").textContent = msg; }
+
+// ── Bars ─────────────────────────────────────
+function renderBars() {
+  const c = document.getElementById("barsContainer");
+  c.innerHTML = "";
+  for (let i = 0; i < MAX_GUESSES; i++) {
+    const d = document.createElement("div");
+    d.className = "bar";
+    if (i < guesses.length) {
+      const g = guesses[i];
+      if (g.skipped) d.classList.add("skipped");
+      else if (g.correct) d.classList.add("correct");
+      else d.classList.add("wrong");
+    } else if (i === attempt && !gameOver) {
+      d.classList.add("active");
+    }
+    c.appendChild(d);
+  }
+}
+
+function renderResultBars() {
+  const c = document.getElementById("resultBars");
+  c.innerHTML = "";
+  for (let i = 0; i < MAX_GUESSES; i++) {
+    const d = document.createElement("div");
+    d.className = "bar";
+    if (i < guesses.length) {
+      const g = guesses[i];
+      if (g.skipped) d.classList.add("skipped");
+      else if (g.correct) d.classList.add("correct");
+      else d.classList.add("wrong");
+    }
+    c.appendChild(d);
+  }
+}
+
+// ── Guesses ───────────────────────────────────
+function renderGuesses() {
+  const c = document.getElementById("guessesList");
+  c.innerHTML = "";
+  guesses.forEach(g => {
+    const el = document.createElement("div");
+    el.className = "guess-item";
+
+    const dot = document.createElement("div");
+    dot.className = "guess-dot " + (g.skipped ? "skipped" : g.correct ? "correct" : "wrong");
+
+    const txt = document.createElement("div");
+    txt.className = "guess-text";
+    txt.textContent = g.skipped ? `— ${t("skipped")}` : (g.value || "—");
+
+    const badge = document.createElement("div");
+    badge.className = "guess-badge " + (g.skipped ? "skipped" : g.correct ? "correct" : "wrong");
+    badge.textContent = g.skipped ? t("skipped") : g.correct ? t("won") : "✗";
+
+    el.appendChild(dot); el.appendChild(txt); el.appendChild(badge);
+    c.appendChild(el);
+  });
+}
+
+// ── Autocomplete ──────────────────────────────
+function showAC(query) {
+  const ac = document.getElementById("autocomplete");
+  if (!query) { ac.classList.remove("show"); return; }
+  const q = query.toLowerCase();
+  const matches = SONGS.map(s => s.title).filter(t => t.toLowerCase().includes(q)).slice(0, 8);
+  if (!matches.length) { ac.classList.remove("show"); return; }
+  ac.innerHTML = "";
+  acSel = -1;
+  matches.forEach((m, i) => {
+    const d = document.createElement("div");
+    d.className = "ac-item";
+    d.textContent = m;
+    d.addEventListener("mousedown", e => { e.preventDefault(); selectAC(m); });
+    ac.appendChild(d);
+  });
+  ac.classList.add("show");
+}
+
+function hideAC() { document.getElementById("autocomplete").classList.remove("show"); }
+
+function selectAC(val) {
+  document.getElementById("songInput").value = val;
+  hideAC();
+}
+
+function moveAC(dir) {
+  const items = document.querySelectorAll("#autocomplete .ac-item");
+  if (!items.length) return;
+  items.forEach(i => i.classList.remove("selected"));
+  acSel = Math.max(-1, Math.min(items.length - 1, acSel + dir));
+  if (acSel >= 0) {
+    items[acSel].classList.add("selected");
+    document.getElementById("songInput").value = items[acSel].textContent;
+  }
+}
+
+// ── Submit ────────────────────────────────────
+function submit() {
+  if (gameOver) return;
+  const val = document.getElementById("songInput").value.trim();
+  if (!val) return;
+  hideAC();
+
+  const correct = val.toLowerCase() === currentSong.title.toLowerCase();
+  guesses.push({value: val, correct, skipped: false});
+  attempt++;
+
+  document.getElementById("songInput").value = "";
+  renderBars();
+  renderGuesses();
+
+  if (correct || attempt >= MAX_GUESSES) {
+    endGame(correct);
+  }
+}
+
+function skip() {
+  if (gameOver) return;
+  audio && audio.pause();
+  stopTimer();
+  setPlaying(false);
+  guesses.push({value: "", correct: false, skipped: true});
+  attempt++;
+  if (attempt >= MAX_GUESSES) { endGame(false); return; }
+  renderBars();
+  renderGuesses();
+  setStatus(t("ready"));
+  updateTimerUI(0, DURATIONS[attempt]);
+  document.getElementById("timerLabel").textContent = "0.0s / " + DURATIONS[Math.min(attempt, DURATIONS.length-1)] + "s";
+}
+
+function endGame(won) {
+  gameOver = true;
+  freePlay = true;
+  recordResult(won, Math.max(1, attempt));
+  renderBars();
+  renderGuesses();
+  setTimeout(() => showResult(won), 600);
+}
+
+// ── Result ────────────────────────────────────
+function showResult(won) {
+  document.getElementById("inputSection").style.display = "none";
+  document.getElementById("btnRow").style.display = "none";
+
+  const rs = document.getElementById("resultScreen");
+  const title = document.getElementById("resultTitle");
+  title.textContent = won ? t("won") : t("lost");
+  title.className = "result-title " + (won ? "won" : "lost");
+  document.getElementById("resultSongName").textContent = currentSong.title;
+  document.getElementById("againBtn").textContent = t("again");
+  document.getElementById("resultNewBtn").textContent = "🔄 " + t("new");
+
+  renderResultBars();
+  rs.classList.add("show");
+
+  fetchAlbumArt(currentSong.title);
+  setTimeout(() => { audio && audio.play().then(() => { setPlaying(true); document.getElementById("resultPlayBtn").textContent = "⏸"; }); }, 400);
+}
+
+function fetchAlbumArt(songTitle) {
+  const q = encodeURIComponent("IU " + songTitle);
+  fetch(`https://itunes.apple.com/search?term=${q}&entity=song&limit=1`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.resultCount > 0) {
+        const res = data.results[0];
+        const artUrl = res.artworkUrl100.replace("100x100", "300x300");
+        const album = res.collectionName || "";
+        const year = (res.releaseDate || "").slice(0, 4);
+
+        const img = document.getElementById("albumArt");
+        img.src = artUrl;
+        img.style.display = "block";
+        document.getElementById("albumPlaceholder").style.display = "none";
+        document.getElementById("resultAlbum").textContent = album + (year ? " · " + year : "");
+      }
+    }).catch(() => {});
+}
+
+// ── Play Again ────────────────────────────────
+function playAgain() {
+  if (audio) { audio.pause(); audio = null; }
+  stopTimer();
+  attempt = 0;
+  guesses = [];
+  gameOver = false;
+  freePlay = false;
+  isPlaying = false;
+
+  document.getElementById("resultScreen").classList.remove("show");
+  document.getElementById("inputSection").style.display = "";
+  document.getElementById("btnRow").style.display = "";
+  document.getElementById("albumArt").style.display = "none";
+  document.getElementById("albumPlaceholder").style.display = "flex";
+  document.getElementById("resultAlbum").textContent = "";
+  document.getElementById("songInput").value = "";
+  document.getElementById("resultPlayBtn").textContent = "▶";
+  document.getElementById("resultPlayStatus").textContent = "";
+
+  pickSong();
+  loadAudio();
+  renderBars();
+  renderGuesses();
+  setStatus(t("ready"));
+  updateTimerUI(0, DURATIONS[0]);
+  document.getElementById("timerLabel").textContent = "0.0s / 1s";
+  setPlaying(false);
+}
+
+// ── Stats UI ──────────────────────────────────
+function openStats() {
+  const s = loadStats();
+  const wr = s.played > 0 ? Math.round(s.wins / s.played * 100) : 0;
+  document.getElementById("statsModalTitle").textContent = t("stats");
+  document.getElementById("sPlayed").textContent = s.played;
+  document.getElementById("sPlayedLbl").textContent = t("played");
+  document.getElementById("sWinRate").textContent = wr + "%";
+  document.getElementById("sWinLbl").textContent = t("wins");
+  document.getElementById("sStreak").textContent = s.streak;
+  document.getElementById("sStreakLbl").textContent = t("streak");
+  document.getElementById("sMax").textContent = s.max_streak;
+  document.getElementById("sMaxLbl").textContent = t("best");
+  document.getElementById("sDistLbl").textContent = t("dist");
+  document.getElementById("statsClose").textContent = t("close");
+
+  const maxV = Math.max(...s.dist, 1);
+  const chart = document.getElementById("distChart");
+  chart.innerHTML = "";
+  ["1","2","3","4","5","6","❌"].forEach((lbl, i) => {
+    const row = document.createElement("div");
+    row.className = "dist-row";
+    const key = document.createElement("div");
+    key.className = "dist-key"; key.textContent = lbl;
+    const track = document.createElement("div");
+    track.className = "dist-track";
+    const fill = document.createElement("div");
+    fill.className = "dist-fill " + (lbl === "❌" ? "wrong-fill" : "correct-fill");
+    const pct = Math.max(4, Math.round((s.dist[i] / maxV) * 100));
+    fill.style.width = pct + "%";
+    fill.textContent = s.dist[i] > 0 ? s.dist[i] : "";
+    track.appendChild(fill);
+    row.appendChild(key); row.appendChild(track);
+    chart.appendChild(row);
+  });
+
+  document.getElementById("statsModal").classList.add("show");
+}
+
+// ── Language ──────────────────────────────────
+function setLang(l) {
+  lang = l;
+  document.querySelectorAll(".lang-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.lang === l);
+  });
+  document.getElementById("skipBtn").textContent = t("skip");
+  document.getElementById("confirmBtn").textContent = t("confirm");
+  document.getElementById("songInput").placeholder = t("guess");
+  document.getElementById("newBtn").textContent = "";
+  setStatus(isPlaying ? t("playing") : t("ready"));
+}
+
+// ══════════════════════════════════════════════
+// INIT & EVENTS
+// ══════════════════════════════════════════════
+buildWaveform();
+pickSong();
+loadAudio();
+renderBars();
+renderGuesses();
+updateTimerUI(0, DURATIONS[0]);
+
+document.getElementById("playBtn").addEventListener("click", handlePlay);
+document.getElementById("resultPlayBtn").addEventListener("click", handleResultPlay);
+document.getElementById("skipBtn").addEventListener("click", skip);
+document.getElementById("confirmBtn").addEventListener("click", submit);
+document.getElementById("newBtn").addEventListener("click", playAgain);
+document.getElementById("resultNewBtn").addEventListener("click", playAgain);
+document.getElementById("againBtn").addEventListener("click", playAgain);
+document.getElementById("statsBtn").addEventListener("click", openStats);
+document.getElementById("statsClose").addEventListener("click", () => document.getElementById("statsModal").classList.remove("show"));
+document.getElementById("statsModal").addEventListener("click", e => { if (e.target === document.getElementById("statsModal")) document.getElementById("statsModal").classList.remove("show"); });
+
+document.getElementById("volSlider").addEventListener("input", e => { if (audio) audio.volume = e.target.value / 100; });
+
+document.querySelectorAll(".lang-btn").forEach(b => {
+  b.addEventListener("click", () => setLang(b.dataset.lang));
+});
+
+const songInput = document.getElementById("songInput");
+songInput.addEventListener("input", () => showAC(songInput.value));
+songInput.addEventListener("blur", () => setTimeout(hideAC, 200));
+songInput.addEventListener("keydown", e => {
+  if (e.key === "ArrowDown") { e.preventDefault(); moveAC(1); }
+  else if (e.key === "ArrowUp") { e.preventDefault(); moveAC(-1); }
+  else if (e.key === "Enter") { e.preventDefault(); submit(); }
+  else if (e.key === "Escape") hideAC();
+});
+</script>
+</body>
+</html>

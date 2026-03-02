@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "src": "/songs/(.*)",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000",
+        "Accept-Ranges": "bytes"
+      },
+      "dest": "/songs/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
+}

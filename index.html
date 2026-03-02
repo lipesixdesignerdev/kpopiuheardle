@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* MANTIVE SEU CSS ORIGINAL - Ele está excelente */
   :root {
     --bg:      #0d0b12;
     --card:    #1a1625;
@@ -20,250 +19,234 @@
     --text:    #f5f0ff;
     --muted:   #7a6e90;
   }
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
     background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif;
     min-height: 100vh; display: flex; flex-direction: column; align-items: center;
     padding: 0 0 60px; position: relative; overflow-x: hidden;
   }
-  body::before {
-    content: ''; position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
-    width: 700px; height: 700px; background: radial-gradient(ellipse, rgba(232,121,160,0.08) 0%, transparent 70%);
-    pointer-events: none; z-index: 0;
+
+  /* Ajuste do Header para ser responsivo */
+  header {
+    display: flex; justify-content: space-between; align-items: center;
+    width: 100%; max-width: 520px; padding: 20px 20px 14px;
+    border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 10px;
   }
-  .app { width: 100%; max-width: 520px; padding: 0 20px; position: relative; z-index: 1; }
-  header { display: flex; align-items: center; gap: 10px; padding: 20px 0 14px; border-bottom: 1px solid var(--border); margin-bottom: 0; }
-  .logo { display: flex; align-items: center; gap: 6px; flex: 1; }
-  .logo-avatar { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; border: 1.5px solid var(--accent); flex-shrink: 0; }
+
+  .logo { display: flex; align-items: center; gap: 8px; }
+  .logo-avatar { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; border: 1.5px solid var(--accent); }
   .logo-avatar img { width: 100%; height: 100%; object-fit: cover; }
   .logo-iu { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--accent); font-weight: 700; }
   .logo-heardle { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--text); font-weight: 400; }
+
+  .header-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+  .lang-switcher { display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .lang-btn { background: var(--card); border: none; color: var(--muted); padding: 5px 8px; font-size: 11px; cursor: pointer; transition: 0.2s; }
+  .lang-btn.active { background: var(--accent); color: white; }
+
+  .icon-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+
+  .app { width: 100%; max-width: 520px; padding: 0 20px; position: relative; z-index: 1; }
   .bars { display: flex; gap: 5px; margin: 18px 0 0; }
-  .bar { flex: 1; height: 7px; border-radius: 4px; background: var(--border); transition: background .4s; position: relative; overflow: hidden; }
+  .bar { flex: 1; height: 7px; border-radius: 4px; background: var(--border); position: relative; overflow: hidden; }
   .bar.correct { background: var(--correct); }
   .bar.wrong   { background: var(--wrong); }
   .bar.skipped { background: var(--skip); }
-  .bar.active  { background: var(--border); }
+
   .player-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-top: 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
   .waveform { display: flex; align-items: center; gap: 3px; height: 44px; }
   .wave-bar { width: 4px; background: var(--border); border-radius: 2px; }
-  .waveform.playing .wave-bar { background: var(--accent); animation: wave-anim var(--dur, 0.6s) ease-in-out infinite alternate; animation-delay: var(--delay, 0s); }
-  @keyframes wave-anim { 0% { height: 4px; } 100% { height: var(--peak, 28px); } }
+  .waveform.playing .wave-bar { background: var(--accent); animation: wave-anim 0.6s ease-in-out infinite alternate; }
+  @keyframes wave-anim { 0% { height: 4px; } 100% { height: 28px; } }
+
   .play-btn { width: 56px; height: 56px; border-radius: 50%; background: var(--accent); border: none; color: white; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(232,121,160,.4); }
-  .status-text { font-size: 12px; color: var(--muted); text-align: center; min-height: 16px; }
-  .timer-track { width: 100%; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
-  .timer-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; }
+  
+  .timer-track { width: 100%; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 10px; }
+  .timer-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width 0.1s linear; }
+
   .guesses-list { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
-  .guess-item { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 13px; }
+  .guess-item { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--text); }
+
   .input-section { margin-top: 14px; position: relative; }
-  .song-input { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 12px 14px; border-radius: 10px; outline: none; }
-  .autocomplete { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; z-index: 100; max-height: 220px; overflow-y: auto; display: none; }
+  .song-input { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 12px 14px; border-radius: 10px; outline: none; font-family: 'DM Sans', sans-serif; }
+  .autocomplete { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; z-index: 100; max-height: 200px; overflow-y: auto; display: none; }
   .autocomplete.show { display: block; }
-  .ac-item { padding: 10px 14px; font-size: 13px; cursor: pointer; border-bottom: 1px solid rgba(46,40,64,.5); }
+  .ac-item { padding: 10px 14px; font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--border); }
+  .ac-item:hover { background: var(--border); color: var(--accent); }
+
   .btn-row { display: flex; gap: 8px; margin-top: 10px; }
-  .btn { flex: 1; padding: 13px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
+  .btn { flex: 1; padding: 13px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; }
   .btn-confirm { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
-  .result-screen { position: fixed; inset: 0; background: var(--bg); z-index: 200; display: flex; flex-direction: column; align-items: center; padding: 0 24px 40px; opacity: 0; pointer-events: none; transition: opacity .4s ease; }
+
+  .result-screen { position: fixed; inset: 0; background: var(--bg); z-index: 200; display: flex; flex-direction: column; align-items: center; padding: 40px 24px; opacity: 0; pointer-events: none; transition: opacity 0.4s; text-align: center; }
   .result-screen.show { opacity: 1; pointer-events: all; }
-  .album-art { width: 220px; height: 220px; border-radius: 14px; object-fit: cover; margin-top: 22px; border: 1px solid var(--border); }
+  .album-art { width: 220px; height: 220px; border-radius: 14px; object-fit: cover; margin-top: 20px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 </style>
 </head>
 <body>
-<div class="app">
-  <header>
-    <div class="logo">
-      <div class="logo-avatar"><img src="avatar.png" alt="IU"></div>
-      <div class="logo-text"><span class="logo-iu">IU</span><span class="logo-heardle"> Heardle</span></div>
-    </div>
-    <div class="header-actions">
-      <button class="icon-btn" id="newBtn">🔄</button>
-    </div>
-  </header>
 
+<header>
+  <div class="logo">
+    <div class="logo-avatar">
+      <img src="https://i.scdn.co/image/ab67616d0000b273760431454593457317fd6a64" alt="IU">
+    </div>
+    <div class="logo-text">
+      <span class="logo-iu">IU</span><span class="logo-heardle"> Heardle</span>
+    </div>
+  </div>
+  
+  <div class="header-actions">
+    <div class="lang-switcher">
+      <button class="lang-btn active">PT</button>
+      <button class="lang-btn">EN</button>
+    </div>
+    <button class="icon-btn" id="statsBtn">📊</button>
+    <button class="icon-btn" id="newBtn">🔄</button>
+  </div>
+</header>
+
+<div class="app">
   <div class="bars" id="barsContainer"></div>
 
   <div class="player-card">
     <div class="waveform" id="waveform"></div>
     <button class="play-btn" id="playBtn">▶</button>
-    <div class="volume-row" style="width:100%; display:flex; gap:10px; align-items:center;">
+    <div class="volume-row" style="width:100%; display:flex; gap:10px; margin-top:10px;">
       <input type="range" id="volSlider" min="0" max="100" value="80" style="flex:1;">
     </div>
     <p class="status-text" id="statusText">Pronto! Clique ▶</p>
     <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
-    <div class="timer-label" id="timerLabel" style="font-size:11px; color:var(--muted); margin-top:4px;">0.0s / 1s</div>
+    <div id="timerLabel" style="font-size:11px; color:var(--muted); margin-top:5px;">0.0s / 1s</div>
   </div>
 
   <div class="guesses-list" id="guessesList"></div>
 
-  <div class="input-section" id="inputSection">
+  <div class="input-section">
     <input class="song-input" type="text" id="songInput" placeholder="seu palpite aqui…" autocomplete="off">
     <div class="autocomplete" id="autocomplete"></div>
   </div>
 
-  <div class="btn-row" id="btnRow">
-    <button class="btn btn-skip" id="skipBtn" style="background:var(--card); color:var(--muted); border:1px solid var(--border);">⏭ Skip (+1s)</button>
+  <div class="btn-row">
+    <button class="btn" id="skipBtn" style="background:var(--card); color:var(--muted); border:1px solid var(--border);">⏭ Skip (+1s)</button>
     <button class="btn btn-confirm" id="confirmBtn">✓ Confirmar</button>
   </div>
 </div>
 
 <div class="result-screen" id="resultScreen">
-  <h2 class="result-title" id="resultTitle" style="margin-top:40px; font-family:'Playfair Display';"></h2>
+  <h2 id="resultTitle" style="font-family:'Playfair Display'; font-size:28px;"></h2>
   <img class="album-art" id="albumArt" src="" alt="">
-  <p class="result-song-name" id="resultSongName" style="font-size:24px; color:var(--accent); margin-top:10px;"></p>
-  <p class="result-album" id="resultAlbum" style="color:var(--muted);"></p>
-  <button class="btn-again" id="againBtn" style="margin-top:30px; padding:15px 40px; background:var(--accent); color:white; border:none; border-radius:10px; cursor:pointer;">Jogar Novamente</button>
+  <p id="resultSongName" style="font-size:24px; color:var(--accent); margin-top:15px; font-weight:bold;"></p>
+  <p id="resultAlbum" style="color:var(--muted); margin-top:5px;"></p>
+  <button id="againBtn" style="margin-top:40px; padding:15px 40px; background:var(--accent); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">🔄 Jogar Novamente</button>
 </div>
 
 <script src="database.js"></script>
-
 <script>
-// ══════════════════════════════════════════════
-// LÓGICA DO JOGO (AJUSTADA PARA O DATABASE.JS)
-// ══════════════════════════════════════════════
-const DURATIONS = [1, 2, 4, 7, 11, 16];
-const MAX_GUESSES = 6;
+  const DURATIONS = [1, 2, 4, 7, 11, 16];
+  let currentSong = null, attempt = 0, guesses = [], isPlaying = false, audio = null, timerInterval = null;
 
-let currentSong = null;
-let attempt = 0;
-let guesses = [];
-let gameOver = false;
-let isPlaying = false;
-let audio = null;
-let timerInterval = null;
+  function init() {
+    currentSong = musicasIU[Math.floor(Math.random() * musicasIU.length)];
+    audio = new Audio(currentSong.file);
+    renderBars();
+    buildWaveform();
+  }
 
-// Sorteia música do seu database.js
-function pickSong() {
-  currentSong = musicasIU[Math.floor(Math.random() * musicasIU.length)];
-}
-
-function loadAudio() {
-  if (audio) { audio.pause(); audio = null; }
-  // O encodeURIComponent garante que nomes com espaços ou parênteses funcionem
-  audio = new Audio(currentSong.file); 
-  audio.volume = document.getElementById("volSlider").value / 100;
-}
-
-function handlePlay() {
-  if (isPlaying) { pauseAudio(); return; }
-  const maxDur = DURATIONS[attempt];
-  audio.currentTime = 0;
-  audio.play();
-  isPlaying = true;
-  document.getElementById("playBtn").textContent = "⏸";
-  document.getElementById("statusText").textContent = "Tocando...";
-  
-  let elapsed = 0;
-  timerInterval = setInterval(() => {
-    elapsed += 0.1;
-    let pct = (elapsed / maxDur) * 100;
-    document.getElementById("timerFill").style.width = Math.min(pct, 100) + "%";
-    document.getElementById("timerLabel").textContent = elapsed.toFixed(1) + "s / " + maxDur + "s";
+  function handlePlay() {
+    if (isPlaying) { pauseAudio(); return; }
+    const maxDur = DURATIONS[attempt];
+    audio.currentTime = 0;
+    audio.play();
+    isPlaying = true;
+    document.getElementById("playBtn").textContent = "⏸";
+    document.getElementById("waveform").classList.add("playing");
     
-    if (elapsed >= maxDur) { pauseAudio(); }
-  }, 100);
-}
-
-function pauseAudio() {
-  audio.pause();
-  clearInterval(timerInterval);
-  isPlaying = false;
-  document.getElementById("playBtn").textContent = "▶";
-  document.getElementById("statusText").textContent = "Pausado";
-}
-
-// Autocomplete puxando do database.js
-document.getElementById("songInput").addEventListener("input", (e) => {
-  const query = e.target.value.toLowerCase();
-  const ac = document.getElementById("autocomplete");
-  if (!query) { ac.classList.remove("show"); return; }
-  
-  const matches = musicasIU.filter(s => s.title.toLowerCase().includes(query)).slice(0, 6);
-  ac.innerHTML = matches.map(m => `<div class="ac-item" onclick="selectSong('${m.title}')">${m.title}</div>`).join('');
-  ac.classList.add("show");
-});
-
-function selectSong(title) {
-  document.getElementById("songInput").value = title;
-  document.getElementById("autocomplete").classList.remove("show");
-}
-
-function submitGuess() {
-  const val = document.getElementById("songInput").value;
-  if (!val || gameOver) return;
-  
-  const isCorrect = val.toLowerCase() === currentSong.title.toLowerCase();
-  guesses.push({ title: val, correct: isCorrect });
-  
-  if (isCorrect) { showResult(true); }
-  else {
-    attempt++;
-    if (attempt >= MAX_GUESSES) { showResult(false); }
-    else { renderBars(); renderGuesses(); document.getElementById("songInput").value = ""; }
+    let elapsed = 0;
+    timerInterval = setInterval(() => {
+      elapsed += 0.1;
+      document.getElementById("timerFill").style.width = Math.min((elapsed/maxDur)*100, 100) + "%";
+      document.getElementById("timerLabel").textContent = elapsed.toFixed(1) + "s / " + maxDur + "s";
+      if (elapsed >= maxDur) pauseAudio();
+    }, 100);
   }
-}
 
-function skip() {
-  guesses.push({ title: "Skipped", correct: false, skipped: true });
-  attempt++;
-  if (attempt >= MAX_GUESSES) { showResult(false); }
-  else { renderBars(); renderGuesses(); }
-}
+  function pauseAudio() {
+    audio.pause();
+    clearInterval(timerInterval);
+    isPlaying = false;
+    document.getElementById("playBtn").textContent = "▶";
+    document.getElementById("waveform").classList.remove("playing");
+  }
 
-function renderBars() {
-  const container = document.getElementById("barsContainer");
-  container.innerHTML = "";
-  for (let i = 0; i < MAX_GUESSES; i++) {
-    const bar = document.createElement("div");
-    bar.className = "bar";
-    if (i < guesses.length) {
-      if (guesses[i].correct) bar.classList.add("correct");
-      else if (guesses[i].skipped) bar.classList.add("skipped");
-      else bar.classList.add("wrong");
+  function selectSong(title) {
+    document.getElementById("songInput").value = title;
+    document.getElementById("autocomplete").classList.remove("show");
+  }
+
+  document.getElementById("songInput").addEventListener("input", (e) => {
+    const q = e.target.value.toLowerCase();
+    const ac = document.getElementById("autocomplete");
+    if (!q) { ac.classList.remove("show"); return; }
+    const matches = musicasIU.filter(s => s.title.toLowerCase().includes(q)).slice(0, 6);
+    ac.innerHTML = matches.map(m => `<div class="ac-item" onclick="selectSong('${m.title}')">${m.title}</div>`).join('');
+    ac.classList.add("show");
+  });
+
+  function submitGuess() {
+    const val = document.getElementById("songInput").value;
+    if (!val) return;
+    const correct = val.toLowerCase() === currentSong.title.toLowerCase();
+    guesses.push({ title: val, correct });
+    if (correct) showResult(true);
+    else {
+      attempt++;
+      if (attempt >= 6) showResult(false);
+      else { renderBars(); renderGuesses(); document.getElementById("songInput").value = ""; }
     }
-    container.appendChild(bar);
   }
-}
 
-function renderGuesses() {
-  const list = document.getElementById("guessesList");
-  list.innerHTML = guesses.map(g => `<div class="guess-item">${g.title}</div>`).join('');
-}
-
-function showResult(won) {
-  gameOver = true;
-  document.getElementById("resultScreen").classList.add("show");
-  document.getElementById("resultTitle").textContent = won ? "🎉 Você acertou!" : "😔 Não foi dessa vez!";
-  document.getElementById("resultSongName").textContent = currentSong.title;
-  document.getElementById("resultAlbum").textContent = currentSong.album;
-  document.getElementById("albumArt").src = currentSong.cover; // PUXA DIRETO DO DATABASE
-}
-
-// Inicialização
-function init() {
-  pickSong();
-  loadAudio();
-  renderBars();
-  buildWaveform();
-}
-
-function buildWaveform() {
-  const wf = document.getElementById("waveform");
-  for (let i = 0; i < 20; i++) {
-    const b = document.createElement("div");
-    b.className = "wave-bar";
-    b.style.height = "10px";
-    b.style.setProperty("--peak", (15 + Math.random() * 20) + "px");
-    wf.appendChild(b);
+  function skip() {
+    guesses.push({ title: "Skipped", correct: false, skipped: true });
+    attempt++;
+    if (attempt >= 6) showResult(false);
+    else { renderBars(); renderGuesses(); }
   }
-}
 
-document.getElementById("playBtn").addEventListener("click", handlePlay);
-document.getElementById("confirmBtn").addEventListener("click", submitGuess);
-document.getElementById("skipBtn").addEventListener("click", skip);
-document.getElementById("againBtn").addEventListener("click", () => location.reload());
-document.getElementById("newBtn").addEventListener("click", () => location.reload());
+  function renderBars() {
+    const container = document.getElementById("barsContainer");
+    container.innerHTML = Array.from({length:6}, (_,i) => {
+      let cls = "bar";
+      if (i < guesses.length) cls += guesses[i].correct ? " correct" : (guesses[i].skipped ? " skipped" : " wrong");
+      return `<div class="${cls}"></div>`;
+    }).join('');
+  }
 
-window.onload = init;
+  function renderGuesses() {
+    document.getElementById("guessesList").innerHTML = guesses.map(g => `<div class="guess-item">${g.title}</div>`).join('');
+  }
+
+  function showResult(won) {
+    document.getElementById("resultScreen").classList.add("show");
+    document.getElementById("resultTitle").textContent = won ? "🎉 Mandou bem!" : "😔 Quase hein!";
+    document.getElementById("resultSongName").textContent = currentSong.title;
+    document.getElementById("resultAlbum").textContent = currentSong.album;
+    document.getElementById("albumArt").src = currentSong.cover;
+  }
+
+  function buildWaveform() {
+    const wf = document.getElementById("waveform");
+    for (let i=0; i<20; i++) wf.innerHTML += `<div class="wave-bar" style="height:10px; --peak:${15+Math.random()*20}px"></div>`;
+  }
+
+  document.getElementById("playBtn").addEventListener("click", handlePlay);
+  document.getElementById("confirmBtn").addEventListener("click", submitGuess);
+  document.getElementById("skipBtn").addEventListener("click", skip);
+  document.getElementById("againBtn").addEventListener("click", () => location.reload());
+  document.getElementById("newBtn").addEventListener("click", () => location.reload());
+  window.onload = init;
 </script>
 </body>
 </html>

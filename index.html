@@ -28,62 +28,65 @@
     padding: 0 0 60px; position: relative; overflow-x: hidden;
   }
 
-  /* Ajuste do Header para ser responsivo */
+  /* Cabeçalho Corrigido */
   header {
     display: flex; justify-content: space-between; align-items: center;
-    width: 100%; max-width: 520px; padding: 20px 20px 14px;
-    border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 10px;
+    width: 100%; max-width: 520px; padding: 15px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 10px; z-index: 10;
   }
 
-  .logo { display: flex; align-items: center; gap: 8px; }
-  .logo-avatar { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; border: 1.5px solid var(--accent); }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 2px solid var(--accent); background: var(--border); }
   .logo-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .logo-iu { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--accent); font-weight: 700; }
-  .logo-heardle { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--text); font-weight: 400; }
+  .logo-iu { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--accent); font-weight: 700; }
+  .logo-heardle { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--text); font-weight: 400; }
 
-  .header-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-
-  .lang-switcher { display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-  .lang-btn { background: var(--card); border: none; color: var(--muted); padding: 5px 8px; font-size: 11px; cursor: pointer; transition: 0.2s; }
+  .header-actions { display: flex; align-items: center; gap: 10px; }
+  .lang-switcher { display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: var(--card); }
+  .lang-btn { background: none; border: none; color: var(--muted); padding: 5px 8px; font-size: 11px; cursor: pointer; font-weight: bold; }
   .lang-btn.active { background: var(--accent); color: white; }
 
-  .icon-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+  .icon-btn { background: var(--card); border: 1px solid var(--border); color: white; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; }
+  .icon-btn:hover { background: var(--border); }
 
   .app { width: 100%; max-width: 520px; padding: 0 20px; position: relative; z-index: 1; }
-  .bars { display: flex; gap: 5px; margin: 18px 0 0; }
-  .bar { flex: 1; height: 7px; border-radius: 4px; background: var(--border); position: relative; overflow: hidden; }
+  .bars { display: flex; gap: 6px; margin: 20px 0 10px; }
+  .bar { flex: 1; height: 8px; border-radius: 4px; background: var(--border); position: relative; }
   .bar.correct { background: var(--correct); }
   .bar.wrong   { background: var(--wrong); }
   .bar.skipped { background: var(--skip); }
 
-  .player-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-top: 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-  .waveform { display: flex; align-items: center; gap: 3px; height: 44px; }
+  .player-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 25px 20px; margin-top: 10px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+  .waveform { display: flex; align-items: center; gap: 3px; height: 40px; }
   .wave-bar { width: 4px; background: var(--border); border-radius: 2px; }
   .waveform.playing .wave-bar { background: var(--accent); animation: wave-anim 0.6s ease-in-out infinite alternate; }
-  @keyframes wave-anim { 0% { height: 4px; } 100% { height: 28px; } }
+  @keyframes wave-anim { 0% { height: 6px; } 100% { height: 30px; } }
 
-  .play-btn { width: 56px; height: 56px; border-radius: 50%; background: var(--accent); border: none; color: white; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(232,121,160,.4); }
+  .play-btn { width: 64px; height: 64px; border-radius: 50%; background: var(--accent); border: none; color: white; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(232,121,160,.5); }
   
-  .timer-track { width: 100%; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 10px; }
+  .timer-track { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
   .timer-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width 0.1s linear; }
 
-  .guesses-list { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
-  .guess-item { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--text); }
+  .guesses-list { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .guess-item { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; font-size: 14px; color: var(--text); }
 
-  .input-section { margin-top: 14px; position: relative; }
-  .song-input { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 12px 14px; border-radius: 10px; outline: none; font-family: 'DM Sans', sans-serif; }
-  .autocomplete { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; z-index: 100; max-height: 200px; overflow-y: auto; display: none; }
+  .input-section { margin-top: 20px; position: relative; }
+  .song-input { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 14px; border-radius: 12px; outline: none; font-size: 15px; }
+  .autocomplete { position: absolute; bottom: 100%; left: 0; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 12px; z-index: 100; max-height: 200px; overflow-y: auto; display: none; margin-bottom: 5px; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
   .autocomplete.show { display: block; }
-  .ac-item { padding: 10px 14px; font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--border); }
+  .ac-item { padding: 12px 16px; font-size: 14px; cursor: pointer; border-bottom: 1px solid var(--border); }
   .ac-item:hover { background: var(--border); color: var(--accent); }
 
-  .btn-row { display: flex; gap: 8px; margin-top: 10px; }
-  .btn { flex: 1; padding: 13px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+  .btn-row { display: flex; gap: 10px; margin-top: 15px; }
+  .btn { flex: 1; padding: 15px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px; }
   .btn-confirm { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
 
-  .result-screen { position: fixed; inset: 0; background: var(--bg); z-index: 200; display: flex; flex-direction: column; align-items: center; padding: 40px 24px; opacity: 0; pointer-events: none; transition: opacity 0.4s; text-align: center; }
-  .result-screen.show { opacity: 1; pointer-events: all; }
-  .album-art { width: 220px; height: 220px; border-radius: 14px; object-fit: cover; margin-top: 20px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  /* Telas de Modal e Resultado */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.show { display: flex; }
+  .modal-content { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; width: 100%; max-width: 400px; text-align: center; }
+  .album-art { width: 180px; height: 180px; border-radius: 12px; object-fit: cover; margin: 20px 0; border: 1px solid var(--border); }
 </style>
 </head>
 <body>
@@ -91,7 +94,7 @@
 <header>
   <div class="logo">
     <div class="logo-avatar">
-      <img src="https://i.scdn.co/image/ab67616d0000b273760431454593457317fd6a64" alt="IU">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/IU_at_the_2022_Golden_Disc_Awards.jpg/220px-IU_at_the_2022_Golden_Disc_Awards.jpg" alt="IU">
     </div>
     <div class="logo-text">
       <span class="logo-iu">IU</span><span class="logo-heardle"> Heardle</span>
@@ -114,19 +117,16 @@
   <div class="player-card">
     <div class="waveform" id="waveform"></div>
     <button class="play-btn" id="playBtn">▶</button>
-    <div class="volume-row" style="width:100%; display:flex; gap:10px; margin-top:10px;">
-      <input type="range" id="volSlider" min="0" max="100" value="80" style="flex:1;">
-    </div>
-    <p class="status-text" id="statusText">Pronto! Clique ▶</p>
+    <p class="status-text" id="statusText" style="font-size: 12px; color: var(--muted);">Pronto! Clique ▶</p>
     <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
-    <div id="timerLabel" style="font-size:11px; color:var(--muted); margin-top:5px;">0.0s / 1s</div>
+    <div id="timerLabel" style="font-size:11px; color:var(--muted); width: 100%; text-align: right;">0.0s / 1s</div>
   </div>
 
   <div class="guesses-list" id="guessesList"></div>
 
   <div class="input-section">
-    <input class="song-input" type="text" id="songInput" placeholder="seu palpite aqui…" autocomplete="off">
     <div class="autocomplete" id="autocomplete"></div>
+    <input class="song-input" type="text" id="songInput" placeholder="seu palpite aqui…" autocomplete="off">
   </div>
 
   <div class="btn-row">
@@ -135,12 +135,14 @@
   </div>
 </div>
 
-<div class="result-screen" id="resultScreen">
-  <h2 id="resultTitle" style="font-family:'Playfair Display'; font-size:28px;"></h2>
-  <img class="album-art" id="albumArt" src="" alt="">
-  <p id="resultSongName" style="font-size:24px; color:var(--accent); margin-top:15px; font-weight:bold;"></p>
-  <p id="resultAlbum" style="color:var(--muted); margin-top:5px;"></p>
-  <button id="againBtn" style="margin-top:40px; padding:15px 40px; background:var(--accent); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">🔄 Jogar Novamente</button>
+<div class="modal-overlay" id="resultModal">
+  <div class="modal-content">
+    <h2 id="resultTitle" style="font-family:'Playfair Display';"></h2>
+    <img class="album-art" id="albumArt" src="">
+    <p id="resultSongName" style="font-size:20px; color:var(--accent); font-weight:bold;"></p>
+    <p id="resultAlbum" style="color:var(--muted); font-size: 14px; margin-bottom: 20px;"></p>
+    <button id="againBtn" style="width: 100%; padding:15px; background:var(--accent); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">🔄 Jogar Novamente</button>
+  </div>
 </div>
 
 <script src="database.js"></script>
@@ -149,10 +151,16 @@
   let currentSong = null, attempt = 0, guesses = [], isPlaying = false, audio = null, timerInterval = null;
 
   function init() {
+    // Sorteia música do seu database.js
+    if (typeof musicasIU === 'undefined') {
+        alert("Erro: database.js não encontrado!");
+        return;
+    }
     currentSong = musicasIU[Math.floor(Math.random() * musicasIU.length)];
     audio = new Audio(currentSong.file);
     renderBars();
     buildWaveform();
+    document.getElementById("songInput").value = "";
   }
 
   function handlePlay() {
@@ -190,14 +198,14 @@
     const q = e.target.value.toLowerCase();
     const ac = document.getElementById("autocomplete");
     if (!q) { ac.classList.remove("show"); return; }
-    const matches = musicasIU.filter(s => s.title.toLowerCase().includes(q)).slice(0, 6);
+    const matches = musicasIU.filter(s => s.title.toLowerCase().includes(q)).slice(0, 5);
     ac.innerHTML = matches.map(m => `<div class="ac-item" onclick="selectSong('${m.title}')">${m.title}</div>`).join('');
     ac.classList.add("show");
   });
 
   function submitGuess() {
     const val = document.getElementById("songInput").value;
-    if (!val) return;
+    if (!val || gameOver) return;
     const correct = val.toLowerCase() === currentSong.title.toLowerCase();
     guesses.push({ title: val, correct });
     if (correct) showResult(true);
@@ -209,7 +217,7 @@
   }
 
   function skip() {
-    guesses.push({ title: "Skipped", correct: false, skipped: true });
+    guesses.push({ title: "Pulou", correct: false, skipped: true });
     attempt++;
     if (attempt >= 6) showResult(false);
     else { renderBars(); renderGuesses(); }
@@ -229,8 +237,8 @@
   }
 
   function showResult(won) {
-    document.getElementById("resultScreen").classList.add("show");
-    document.getElementById("resultTitle").textContent = won ? "🎉 Mandou bem!" : "😔 Quase hein!";
+    document.getElementById("resultModal").classList.add("show");
+    document.getElementById("resultTitle").textContent = won ? "🎉 Você acertou!" : "😔 Não foi dessa vez!";
     document.getElementById("resultSongName").textContent = currentSong.title;
     document.getElementById("resultAlbum").textContent = currentSong.album;
     document.getElementById("albumArt").src = currentSong.cover;
@@ -238,7 +246,8 @@
 
   function buildWaveform() {
     const wf = document.getElementById("waveform");
-    for (let i=0; i<20; i++) wf.innerHTML += `<div class="wave-bar" style="height:10px; --peak:${15+Math.random()*20}px"></div>`;
+    wf.innerHTML = "";
+    for (let i=0; i<25; i++) wf.innerHTML += `<div class="wave-bar" style="height:10px; --peak:${15+Math.random()*20}px"></div>`;
   }
 
   document.getElementById("playBtn").addEventListener("click", handlePlay);
@@ -246,6 +255,8 @@
   document.getElementById("skipBtn").addEventListener("click", skip);
   document.getElementById("againBtn").addEventListener("click", () => location.reload());
   document.getElementById("newBtn").addEventListener("click", () => location.reload());
+  document.getElementById("statsBtn").addEventListener("click", () => alert("Estatísticas em breve!"));
+  
   window.onload = init;
 </script>
 </body>

@@ -369,6 +369,9 @@
 <header>
   <div class="logo">
 
+    <div class="logo-avatar">
+      <img src="iuHeart-2x.gif" alt="IU" style="width:100%;height:100%;object-fit:cover;">
+    </div>
     <div class="logo-text">
       <span class="logo-iu">IU</span><span class="logo-heardle"> Heardle</span>
     </div>
@@ -768,7 +771,17 @@
 
   document.getElementById("statsBtn").addEventListener("click", openStats);
 
-  window.onload = init;
+  function tryInit(attempts) {
+    if (typeof musicasIU !== 'undefined') {
+      init();
+    } else if (attempts > 0) {
+      setTimeout(() => tryInit(attempts - 1), 200);
+    } else {
+      alert("Erro: database.js não encontrado!");
+    }
+  }
+
+  window.onload = () => tryInit(20);
 </script>
 </body>
 </html>

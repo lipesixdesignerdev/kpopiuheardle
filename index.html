@@ -137,13 +137,13 @@
 <div class="modal-overlay" id="resultModal">
   <div class="modal-content">
     <h2 id="resultTitle" style="font-family:'Playfair Display';"></h2>
-    <img class="album-art" id="albumArt" src="">
-    <p id="resultSongName" style="font-size:20px; color:var(--accent); font-weight:bold;"></p>
-    <p id="resultAlbum" style="color:var(--muted); font-size: 14px; margin-bottom: 20px;"></p>
-    <button id="againBtn" style="width: 100%; padding:15px; background:var(--accent); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">🔄 Jogar Novamente</button>
-  </div>
-</div>
-
+    <img 
+  class="album-art" 
+  id="albumArt" 
+  src="" 
+  referrerpolicy="no-referrer"
+  onerror="this.src='https://via.placeholder.com/180x180/1a1625/e879a0?text=IU'"
+>
 <script src="database.js"></script>
 <script>
   const DURATIONS = [1, 2, 4, 7, 11, 16];

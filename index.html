@@ -28,7 +28,6 @@
     padding: 0 0 60px; position: relative; overflow-x: hidden;
   }
 
-  /* Cabeçalho Corrigido */
   header {
     display: flex; justify-content: space-between; align-items: center;
     width: 100%; max-width: 520px; padding: 15px 20px;
@@ -64,7 +63,7 @@
   @keyframes wave-anim { 0% { height: 6px; } 100% { height: 30px; } }
 
   .play-btn { width: 64px; height: 64px; border-radius: 50%; background: var(--accent); border: none; color: white; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(232,121,160,.5); }
-  
+
   .timer-track { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
   .timer-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width 0.1s linear; }
 
@@ -82,7 +81,6 @@
   .btn { flex: 1; padding: 15px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px; }
   .btn-confirm { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
 
-  /* Telas de Modal e Resultado */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
   .modal-overlay.show { display: flex; }
   .modal-content { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; width: 100%; max-width: 400px; text-align: center; }
@@ -100,11 +98,12 @@
       <span class="logo-iu">IU</span><span class="logo-heardle"> Heardle</span>
     </div>
   </div>
-  
+
   <div class="header-actions">
     <div class="lang-switcher">
       <button class="lang-btn active">PT</button>
       <button class="lang-btn">EN</button>
+      <button class="lang-btn">ES</button>
     </div>
     <button class="icon-btn" id="statsBtn">📊</button>
     <button class="icon-btn" id="newBtn">🔄</button>
@@ -130,7 +129,7 @@
   </div>
 
   <div class="btn-row">
-    <button class="btn" id="skipBtn" style="background:var(--card); color:var(--muted); border:1px solid var(--border);">⏭ Skip (+1s)</button>
+    <button class="btn" id="skipBtn" style="background:var(--card); color:var(--muted); border:1px solid var(--border);">⏭ Pular (+1s)</button>
     <button class="btn btn-confirm" id="confirmBtn">✓ Confirmar</button>
   </div>
 </div>
@@ -149,18 +148,80 @@
 <script>
   const DURATIONS = [1, 2, 4, 7, 11, 16];
   let currentSong = null, attempt = 0, guesses = [], isPlaying = false, audio = null, timerInterval = null;
+  let gameOver = false; // ✅ CORRIGIDO: variável declarada
+
+  // ── Traduções ──────────────────────────────────────────────────────────────
+  const i18n = {
+    PT: {
+      status:      "Pronto! Clique ▶",
+      placeholder: "seu palpite aqui…",
+      skip:        "⏭ Pular (+1s)",
+      confirm:     "✓ Confirmar",
+      wonTitle:    "🎉 Você acertou!",
+      lostTitle:   "😔 Não foi dessa vez!",
+      playAgain:   "🔄 Jogar Novamente",
+      stats:       "Estatísticas em breve!"
+    },
+    EN: {
+      status:      "Ready! Click ▶",
+      placeholder: "your guess here…",
+      skip:        "⏭ Skip (+1s)",
+      confirm:     "✓ Confirm",
+      wonTitle:    "🎉 You got it!",
+      lostTitle:   "😔 Not this time!",
+      playAgain:   "🔄 Play Again",
+      stats:       "Stats coming soon!"
+    },
+    ES: {
+      status:      "¡Listo! Clic ▶",
+      placeholder: "tu respuesta aquí…",
+      skip:        "⏭ Saltar (+1s)",
+      confirm:     "✓ Confirmar",
+      wonTitle:    "🎉 ¡Lo lograste!",
+      lostTitle:   "😔 ¡Otra vez será!",
+      playAgain:   "🔄 Jugar de Nuevo",
+      stats:       "¡Estadísticas próximamente!"
+    }
+  };
+
+  let currentLang = 'PT';
+
+  function setLanguage(lang) {
+    currentLang = lang;
+    const t = i18n[lang];
+    document.getElementById("statusText").textContent    = t.status;
+    document.getElementById("songInput").placeholder     = t.placeholder;
+    document.getElementById("skipBtn").textContent       = t.skip;
+    document.getElementById("confirmBtn").textContent    = t.confirm;
+    document.getElementById("againBtn").textContent      = t.playAgain;
+    document.querySelectorAll(".lang-btn").forEach(btn => {
+      btn.classList.toggle("active", btn.textContent === lang);
+    });
+  }
+
+  // ✅ CORRIGIDO: event listeners nos botões de idioma
+  document.querySelectorAll(".lang-btn").forEach(btn => {
+    btn.addEventListener("click", () => setLanguage(btn.textContent));
+  });
+  // ───────────────────────────────────────────────────────────────────────────
 
   function init() {
-    // Sorteia música do seu database.js
     if (typeof musicasIU === 'undefined') {
-        alert("Erro: database.js não encontrado!");
-        return;
+      alert("Erro: database.js não encontrado!");
+      return;
     }
+    gameOver = false;
+    attempt  = 0;
+    guesses  = [];
     currentSong = musicasIU[Math.floor(Math.random() * musicasIU.length)];
     audio = new Audio(currentSong.file);
     renderBars();
     buildWaveform();
     document.getElementById("songInput").value = "";
+    document.getElementById("guessesList").innerHTML = "";
+    document.getElementById("timerFill").style.width = "0%";
+    document.getElementById("timerLabel").textContent = "0.0s / 1s";
+    setLanguage(currentLang);
   }
 
   function handlePlay() {
@@ -171,11 +232,11 @@
     isPlaying = true;
     document.getElementById("playBtn").textContent = "⏸";
     document.getElementById("waveform").classList.add("playing");
-    
+
     let elapsed = 0;
     timerInterval = setInterval(() => {
       elapsed += 0.1;
-      document.getElementById("timerFill").style.width = Math.min((elapsed/maxDur)*100, 100) + "%";
+      document.getElementById("timerFill").style.width = Math.min((elapsed / maxDur) * 100, 100) + "%";
       document.getElementById("timerLabel").textContent = elapsed.toFixed(1) + "s / " + maxDur + "s";
       if (elapsed >= maxDur) pauseAudio();
     }, 100);
@@ -204,28 +265,45 @@
   });
 
   function submitGuess() {
-    const val = document.getElementById("songInput").value;
+    const val = document.getElementById("songInput").value.trim();
     if (!val || gameOver) return;
     const correct = val.toLowerCase() === currentSong.title.toLowerCase();
     guesses.push({ title: val, correct });
-    if (correct) showResult(true);
-    else {
+    if (correct) {
+      renderBars();
+      renderGuesses();
+      showResult(true);
+    } else {
       attempt++;
-      if (attempt >= 6) showResult(false);
-      else { renderBars(); renderGuesses(); document.getElementById("songInput").value = ""; }
+      if (attempt >= 6) {
+        renderBars();
+        renderGuesses();
+        showResult(false);
+      } else {
+        renderBars();
+        renderGuesses();
+        document.getElementById("songInput").value = "";
+      }
     }
   }
 
   function skip() {
-    guesses.push({ title: "Pulou", correct: false, skipped: true });
+    if (gameOver) return;
+    guesses.push({ title: i18n[currentLang].skip.replace("⏭ ", "").replace(" (+1s)",""), correct: false, skipped: true });
     attempt++;
-    if (attempt >= 6) showResult(false);
-    else { renderBars(); renderGuesses(); }
+    if (attempt >= 6) {
+      renderBars();
+      renderGuesses();
+      showResult(false);
+    } else {
+      renderBars();
+      renderGuesses();
+    }
   }
 
   function renderBars() {
     const container = document.getElementById("barsContainer");
-    container.innerHTML = Array.from({length:6}, (_,i) => {
+    container.innerHTML = Array.from({ length: 6 }, (_, i) => {
       let cls = "bar";
       if (i < guesses.length) cls += guesses[i].correct ? " correct" : (guesses[i].skipped ? " skipped" : " wrong");
       return `<div class="${cls}"></div>`;
@@ -233,30 +311,44 @@
   }
 
   function renderGuesses() {
-    document.getElementById("guessesList").innerHTML = guesses.map(g => `<div class="guess-item">${g.title}</div>`).join('');
+    document.getElementById("guessesList").innerHTML = guesses.map(g =>
+      `<div class="guess-item">${g.title}</div>`
+    ).join('');
   }
 
   function showResult(won) {
+    gameOver = true;
+    pauseAudio();
+    const t = i18n[currentLang];
     document.getElementById("resultModal").classList.add("show");
-    document.getElementById("resultTitle").textContent = won ? "🎉 Você acertou!" : "😔 Não foi dessa vez!";
+    document.getElementById("resultTitle").textContent    = won ? t.wonTitle : t.lostTitle;
     document.getElementById("resultSongName").textContent = currentSong.title;
-    document.getElementById("resultAlbum").textContent = currentSong.album;
-    document.getElementById("albumArt").src = currentSong.cover;
+    document.getElementById("resultAlbum").textContent    = currentSong.album;
+    document.getElementById("albumArt").src               = currentSong.cover;
+    document.getElementById("againBtn").textContent       = t.playAgain;
   }
 
   function buildWaveform() {
     const wf = document.getElementById("waveform");
     wf.innerHTML = "";
-    for (let i=0; i<25; i++) wf.innerHTML += `<div class="wave-bar" style="height:10px; --peak:${15+Math.random()*20}px"></div>`;
+    for (let i = 0; i < 25; i++) {
+      wf.innerHTML += `<div class="wave-bar" style="height:10px; --peak:${15 + Math.random() * 20}px"></div>`;
+    }
   }
 
   document.getElementById("playBtn").addEventListener("click", handlePlay);
   document.getElementById("confirmBtn").addEventListener("click", submitGuess);
   document.getElementById("skipBtn").addEventListener("click", skip);
-  document.getElementById("againBtn").addEventListener("click", () => location.reload());
-  document.getElementById("newBtn").addEventListener("click", () => location.reload());
-  document.getElementById("statsBtn").addEventListener("click", () => alert("Estatísticas em breve!"));
-  
+  document.getElementById("againBtn").addEventListener("click", () => {
+    document.getElementById("resultModal").classList.remove("show");
+    init();
+  });
+  document.getElementById("newBtn").addEventListener("click", () => {
+    document.getElementById("resultModal").classList.remove("show");
+    init();
+  });
+  document.getElementById("statsBtn").addEventListener("click", () => alert(i18n[currentLang].stats));
+
   window.onload = init;
 </script>
 </body>

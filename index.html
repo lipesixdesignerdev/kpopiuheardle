@@ -577,7 +577,7 @@
     attempt  = 0;
     guesses  = [];
     currentSong = musicasIU[Math.floor(Math.random() * musicasIU.length)];
-    audio = new Audio(currentSong.file);
+    audio = null; // será criado no primeiro play
     renderBars();
     buildWaveform();
     document.getElementById("songInput").value        = "";
@@ -588,11 +588,20 @@
   }
 
   function handlePlay() {
-    if (!audio) return;
+    if (!currentSong) return;
     if (isPlaying) { pauseAudio(); return; }
+
+    // Cria o audio na interação do usuário (evita bloqueio de autoplay do navegador)
+    if (!audio) {
+      audio = new Audio(currentSong.file);
+    }
+
     const maxDur = DURATIONS[attempt];
     audio.currentTime = 0;
-    audio.play();
+    audio.play().catch(err => {
+      console.warn("Play bloqueado:", err);
+      document.getElementById("statusText").textContent = "Toque novamente ▶";
+    });
     isPlaying = true;
     document.getElementById("playBtn").textContent = "⏸";
     document.getElementById("waveform").classList.add("playing");

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>IU Heardle </title>
+<title>IU Heardle - Digital Games Edition</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -439,8 +439,8 @@
 <div class="modal-overlay" id="resultModal">
   <div class="modal-content">
     <h2 id="resultTitle" style="font-family:'Playfair Display';"></h2>
-    <img class="album-art" id="albumArt" src="" referrerpolicy="no-referrer"
-      onerror="this.src='https://via.placeholder.com/180x180/1a1625/e879a0?text=IU'">
+    <img class="album-art" id="albumArt" src="" referrerpolicy="no-referrer" crossorigin="anonymous"
+      onerror="this.onerror=null;this.style.display='none'">
     <p id="resultSongName" style="font-size:20px; color:var(--accent); font-weight:bold;"></p>
     <p id="resultAlbum" style="color:var(--muted); font-size:14px; margin-bottom:20px;"></p>
     <button id="againBtn" style="width:100%; padding:15px; background:var(--accent); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">🔄 Jogar Novamente</button>
@@ -576,8 +576,17 @@
     gameOver = false;
     attempt  = 0;
     guesses  = [];
+
+    // Limpar audio anterior se existir
+    if (audio) { try { audio.pause(); } catch(e){} audio = null; }
+
     currentSong = musicasIU[Math.floor(Math.random() * musicasIU.length)];
-    audio = null; // será criado no primeiro play
+
+    // Pré-carrega o audio mas não toca (evita bloqueio de autoplay)
+    audio = new Audio();
+    audio.preload = "none";
+    audio.src = currentSong.file;
+
     renderBars();
     buildWaveform();
     document.getElementById("songInput").value        = "";
@@ -588,13 +597,8 @@
   }
 
   function handlePlay() {
-    if (!currentSong) return;
+    if (!currentSong || !audio) return;
     if (isPlaying) { pauseAudio(); return; }
-
-    // Cria o audio na interação do usuário (evita bloqueio de autoplay do navegador)
-    if (!audio) {
-      audio = new Audio(currentSong.file);
-    }
 
     const maxDur = DURATIONS[attempt];
     audio.currentTime = 0;

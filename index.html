@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>IU Heardle - Feito Por LipeSiix </title>
+<title>IU Heardle - Digital Games Edition</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -439,8 +439,10 @@
 <div class="modal-overlay" id="resultModal">
   <div class="modal-content">
     <h2 id="resultTitle" style="font-family:'Playfair Display';"></h2>
-    <img class="album-art" id="albumArt" src="" referrerpolicy="no-referrer" crossorigin="anonymous"
-      onerror="this.onerror=null;this.style.display='none'">
+    <div id="albumArtWrapper" style="width:180px;height:180px;margin:20px auto;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--border);display:flex;align-items:center;justify-content:center;">
+      <img class="album-art" id="albumArt" src="" style="width:100%;height:100%;object-fit:cover;margin:0;border:none;"
+        onerror="this.onerror=null;this.parentElement.innerHTML='<span style=font-size:48px>🎵</span>'">
+    </div>
     <p id="resultSongName" style="font-size:20px; color:var(--accent); font-weight:bold;"></p>
     <p id="resultAlbum" style="color:var(--muted); font-size:14px; margin-bottom:20px;"></p>
     <button id="againBtn" style="width:100%; padding:15px; background:var(--accent); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">🔄 Jogar Novamente</button>
@@ -525,7 +527,16 @@
       wonTitle:    "🎉 Você acertou!",
       lostTitle:   "😔 Não foi dessa vez!",
       playAgain:   "🔄 Jogar Novamente",
-      stats:       "Estatísticas em breve!"
+      statsTitle:  "📊 Estatísticas",
+      statsHist:   "Seu histórico de partidas",
+      statsPlayed: "Partidas",
+      statsWins:   "Vitórias",
+      statsStreak: "Sequência",
+      statsBest:   "Melhor",
+      statsDist:   "Distribuição de tentativas",
+      statsReset:  "🗑 Resetar estatísticas",
+      statsClose:  "Fechar",
+      statsWinPct: "de aproveitamento"
     },
     EN: {
       status:      "Ready! Click ▶",
@@ -535,7 +546,16 @@
       wonTitle:    "🎉 You got it!",
       lostTitle:   "😔 Not this time!",
       playAgain:   "🔄 Play Again",
-      stats:       "Stats coming soon!"
+      statsTitle:  "📊 Statistics",
+      statsHist:   "Your match history",
+      statsPlayed: "Played",
+      statsWins:   "Wins",
+      statsStreak: "Streak",
+      statsBest:   "Best",
+      statsDist:   "Guess distribution",
+      statsReset:  "🗑 Reset statistics",
+      statsClose:  "Close",
+      statsWinPct: "win rate"
     },
     ES: {
       status:      "¡Listo! Clic ▶",
@@ -545,7 +565,16 @@
       wonTitle:    "🎉 ¡Lo lograste!",
       lostTitle:   "😔 ¡Otra vez será!",
       playAgain:   "🔄 Jugar de Nuevo",
-      stats:       "¡Estadísticas próximamente!"
+      statsTitle:  "📊 Estadísticas",
+      statsHist:   "Tu historial de partidas",
+      statsPlayed: "Partidas",
+      statsWins:   "Victorias",
+      statsStreak: "Racha",
+      statsBest:   "Mejor",
+      statsDist:   "Distribución de intentos",
+      statsReset:  "🗑 Resetear estadísticas",
+      statsClose:  "Cerrar",
+      statsWinPct: "de rendimiento"
     }
   };
 
@@ -559,6 +588,16 @@
     document.getElementById("skipBtn").textContent     = t.skip;
     document.getElementById("confirmBtn").textContent  = t.confirm;
     document.getElementById("againBtn").textContent    = t.playAgain;
+    // Stats modal
+    document.querySelector(".stats-modal-title").textContent      = t.statsTitle;
+    document.getElementById("statsSubtitle").textContent          = t.statsHist;
+    document.querySelectorAll(".stat-label")[0].textContent        = t.statsPlayed;
+    document.querySelectorAll(".stat-label")[1].textContent        = t.statsWins;
+    document.querySelectorAll(".stat-label")[2].textContent        = t.statsStreak;
+    document.querySelectorAll(".stat-label")[3].textContent        = t.statsBest;
+    document.querySelector(".dist-title").textContent              = t.statsDist;
+    document.getElementById("statsResetBtn").textContent           = t.statsReset;
+    document.getElementById("statsCloseBtn").textContent           = t.statsClose;
     document.querySelectorAll(".lang-btn").forEach(btn => {
       btn.classList.toggle("active", btn.textContent === lang);
     });
@@ -688,7 +727,13 @@
     document.getElementById("resultTitle").textContent    = won ? t.wonTitle : t.lostTitle;
     document.getElementById("resultSongName").textContent = currentSong.title;
     document.getElementById("resultAlbum").textContent    = currentSong.album;
-    document.getElementById("albumArt").src               = currentSong.cover;
+    // Wikimedia bloqueia hotlink direto — usa URL via proxy de imagem
+    const coverUrl = currentSong.cover;
+    const proxyUrl = coverUrl.includes('wikimedia.org')
+      ? `https://images.weserv.nl/?url=${encodeURIComponent(coverUrl)}&w=180&h=180&fit=cover`
+      : coverUrl;
+    document.getElementById("albumArt").src = proxyUrl;
+    document.getElementById("albumArtWrapper").style.display = "flex";
     document.getElementById("againBtn").textContent       = t.playAgain;
   }
 
@@ -750,7 +795,7 @@
     document.getElementById('st-best').textContent   = s.bestStreak;
 
     const winPct = s.played > 0 ? Math.round((s.wins / s.played) * 100) : 0;
-    document.getElementById('statsSubtitle').textContent = `${winPct}% de aproveitamento`;
+    document.getElementById('statsSubtitle').textContent = `${winPct}% ${i18n[currentLang].statsWinPct}`;
 
     const max = Math.max(...Object.values(s.dist), 1);
     const rows = document.getElementById('distRows');

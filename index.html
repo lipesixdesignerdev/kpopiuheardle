@@ -3,386 +3,123 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>IU Heardle - Digital Games Edition</title>
+<title>IU Heardle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* ─── TEMAS ─── */
-  :root,
-  [data-theme="dark"] {
-    --bg:      #0d0b12;
-    --card:    #1a1625;
-    --border:  #2e2840;
-    --accent:  #e879a0;
-    --accent2: #c084fc;
-    --correct: #4ade80;
-    --wrong:   #f87171;
-    --skip:    #facc15;
-    --text:    #f5f0ff;
-    --muted:   #7a6e90;
-    --shadow:  rgba(232,121,160,.35);
-  }
-
-  [data-theme="light"] {
-    --bg:      #f7f4fb;
-    --card:    #ffffff;
-    --border:  #e0d8f0;
-    --accent:  #d63384;
-    --accent2: #9333ea;
-    --correct: #16a34a;
-    --wrong:   #dc2626;
-    --skip:    #ca8a04;
-    --text:    #1e1230;
-    --muted:   #8b7aaa;
-    --shadow:  rgba(214,51,132,.25);
-  }
-
-  [data-theme="neon"] {
-    --bg:      #050510;
-    --card:    #0d0d2b;
-    --border:  #1a1a4e;
-    --accent:  #00ffcc;
-    --accent2: #ff00ff;
-    --correct: #00ff88;
-    --wrong:   #ff2244;
-    --skip:    #ffee00;
-    --text:    #e0f0ff;
-    --muted:   #4466aa;
-    --shadow:  rgba(0,255,204,.4);
-  }
-
-  [data-theme="sepia"] {
-    --bg:      #1c150d;
-    --card:    #2a1f12;
-    --border:  #3e2f1c;
-    --accent:  #e8a87c;
-    --accent2: #c4956a;
-    --correct: #7ab87a;
-    --wrong:   #c96b6b;
-    --skip:    #d4a84b;
-    --text:    #f0e6d3;
-    --muted:   #8a6e52;
-    --shadow:  rgba(232,168,124,.35);
-  }
-
-  [data-theme="abyss"] {
-    --bg:      #000000;
-    --card:    #0a0a0a;
-    --border:  #1a1a1a;
-    --accent:  #e879a0;
-    --accent2: #c084fc;
-    --correct: #4ade80;
-    --wrong:   #f87171;
-    --skip:    #facc15;
-    --text:    #f0f0f0;
-    --muted:   #555555;
-    --shadow:  rgba(232,121,160,.3);
-  }
-
-  /* ─── RESET ─── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 0 0 80px;
-    position: relative;
-    overflow-x: hidden;
-    transition: background 0.4s ease, color 0.4s ease;
-  }
-
-  /* Fundo decorativo sutil */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(ellipse 60% 40% at 50% 0%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-    transition: background 0.4s ease;
-  }
-
-  /* ─── HEADER ─── */
-  header {
-    display: flex; justify-content: space-between; align-items: center;
-    width: 100%; max-width: 520px; padding: 15px 20px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 10px; z-index: 10;
-    transition: border-color 0.3s;
-  }
-
-  .logo { display: flex; align-items: center; gap: 10px; }
-  .logo-avatar {
-    width: 40px; height: 40px; border-radius: 50%; overflow: hidden;
-    border: 2px solid var(--accent); background: var(--border);
-    transition: border-color 0.3s;
-  }
-  .logo-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .logo-iu   { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--accent); font-weight: 700; transition: color 0.3s; }
-  .logo-heardle { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--text); font-weight: 400; transition: color 0.3s; }
-
-  .header-actions { display: flex; align-items: center; gap: 10px; }
-
-  .lang-switcher {
-    display: flex; border: 1px solid var(--border);
-    border-radius: 6px; overflow: hidden; background: var(--card);
-    transition: background 0.3s, border-color 0.3s;
-  }
-  .lang-btn {
-    background: none; border: none; color: var(--muted);
-    padding: 5px 8px; font-size: 11px; cursor: pointer; font-weight: bold;
-    transition: background 0.2s, color 0.2s;
-  }
-  .lang-btn.active { background: var(--accent); color: #fff; }
-
-  .icon-btn {
-    background: var(--card); border: 1px solid var(--border);
-    color: var(--text); padding: 6px 10px; border-radius: 8px;
-    cursor: pointer; font-size: 16px; display: flex; align-items: center;
-    transition: background 0.2s, border-color 0.3s;
-  }
-  .icon-btn:hover { background: var(--border); }
-
-  /* ─── APP ─── */
-  .app { width: 100%; max-width: 520px; padding: 0 20px; position: relative; z-index: 1; }
-
-  .bars { display: flex; gap: 6px; margin: 20px 0 10px; }
-  .bar { flex: 1; height: 8px; border-radius: 4px; background: var(--border); transition: background 0.3s; }
-  .bar.correct { background: var(--correct); }
-  .bar.wrong   { background: var(--wrong); }
-  .bar.skipped { background: var(--skip); }
-
-  .player-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 16px; padding: 25px 20px; margin-top: 10px;
-    display: flex; flex-direction: column; align-items: center; gap: 15px;
-    transition: background 0.3s, border-color 0.3s;
-  }
-
-  .waveform { display: flex; align-items: center; gap: 3px; height: 40px; }
-  .wave-bar { width: 4px; background: var(--border); border-radius: 2px; transition: background 0.3s; }
-  .waveform.playing .wave-bar { background: var(--accent); animation: wave-anim 0.6s ease-in-out infinite alternate; }
-  @keyframes wave-anim { 0% { height: 6px; } 100% { height: 30px; } }
-
-  .play-btn {
-    width: 64px; height: 64px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border: none; color: white; font-size: 24px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 20px var(--shadow);
-    transition: background 0.3s, box-shadow 0.3s;
-  }
-
-  .timer-track {
-    width: 100%; height: 6px; background: var(--border);
-    border-radius: 3px; overflow: hidden; transition: background 0.3s;
-  }
-  .timer-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    width: 0%; transition: width 0.1s linear, background 0.3s;
-  }
-
-  .guesses-list { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
-  .guess-item {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; padding: 12px 16px; font-size: 14px; color: var(--text);
-    transition: background 0.3s, border-color 0.3s, color 0.3s;
-  }
-
-  .input-section { margin-top: 20px; position: relative; }
-  .song-input {
-    width: 100%; background: var(--card); border: 1px solid var(--border);
-    color: var(--text); padding: 14px; border-radius: 12px;
-    outline: none; font-size: 15px;
-    transition: background 0.3s, border-color 0.3s, color 0.3s;
-  }
-  .song-input::placeholder { color: var(--muted); }
-  .autocomplete {
-    position: absolute; bottom: 100%; left: 0; right: 0;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; z-index: 100; max-height: 200px;
-    overflow-y: auto; display: none; margin-bottom: 5px;
-    box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
-    transition: background 0.3s;
-  }
-  .autocomplete.show { display: block; }
-  .ac-item {
-    padding: 12px 16px; font-size: 14px; cursor: pointer;
-    border-bottom: 1px solid var(--border); color: var(--text);
-    transition: background 0.2s;
-  }
-  .ac-item:hover { background: var(--border); color: var(--accent); }
-
-  .btn-row { display: flex; gap: 10px; margin-top: 15px; }
-  .btn { flex: 1; padding: 15px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px; }
-  .btn-skip { background: var(--card); color: var(--muted); border: 1px solid var(--border); transition: background 0.3s; }
-  .btn-confirm { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; transition: background 0.3s; }
-
-  /* ─── MODAL STATS ─── */
-  .stats-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr);
-    gap: 10px; margin: 20px 0;
-  }
-  .stat-box {
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 10px; padding: 12px 6px;
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-  }
-  .stat-number { font-size: 28px; font-weight: 700; color: var(--accent); line-height: 1; }
-  .stat-label  { font-size: 10px; color: var(--muted); text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
-
-  .dist-section { margin-top: 10px; text-align: left; }
-  .dist-title { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-  .dist-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px; }
-  .dist-num { width: 14px; text-align: right; color: var(--muted); font-weight: 600; flex-shrink: 0; }
-  .dist-bar-wrap { flex: 1; background: var(--border); border-radius: 4px; overflow: hidden; height: 20px; }
-  .dist-bar-fill {
-    height: 100%; background: var(--accent);
-    border-radius: 4px; min-width: 4px;
-    display: flex; align-items: center; justify-content: flex-end;
-    padding-right: 6px; font-size: 11px; color: white; font-weight: 700;
-    transition: width 0.6s ease;
-  }
-  .dist-bar-fill.highlight { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
-
-  .stats-modal-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 18px; margin-bottom: 4px;
-  }
-  .stats-reset-btn {
-    margin-top: 16px; background: none; border: 1px solid var(--border);
-    color: var(--muted); padding: 8px 16px; border-radius: 8px;
-    cursor: pointer; font-size: 12px; width: 100%;
-    transition: background 0.2s;
-  }
-  .stats-reset-btn:hover { background: var(--border); color: var(--text); }
-
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.8);
-    z-index: 200; display: none; align-items: center;
-    justify-content: center; padding: 20px;
-  }
-  .modal-overlay.show { display: flex; }
-  .modal-content {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 20px; padding: 30px; width: 100%;
-    max-width: 400px; text-align: center;
-    transition: background 0.3s, border-color 0.3s;
-  }
-  .album-art {
-    width: 180px; height: 180px; border-radius: 12px;
-    object-fit: cover; margin: 20px 0; border: 1px solid var(--border);
-  }
-
-  /* ─── THEME SWITCHER FLUTUANTE ─── */
-  .theme-switcher {
-    position: fixed;
-    bottom: 24px;
-    right: 20px;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
-  }
-
-  .theme-toggle-btn {
-    width: 48px; height: 48px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border: none;
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-    box-shadow: 0 4px 20px var(--shadow);
-    display: flex; align-items: center; justify-content: center;
-    transition: transform 0.3s ease, box-shadow 0.3s;
-  }
-  .theme-toggle-btn:hover { transform: scale(1.1); }
-  .theme-toggle-btn.open { transform: rotate(45deg); }
-
-  .theme-options {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(10px) scale(0.95);
-    transition: opacity 0.25s ease, transform 0.25s ease;
-  }
-  .theme-options.visible {
-    opacity: 1;
-    pointer-events: all;
-    transform: translateY(0) scale(1);
-  }
-
-  .theme-option {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 14px 8px 10px;
-    border-radius: 30px;
-    border: 1px solid var(--border);
-    background: var(--card);
-    color: var(--text);
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    white-space: nowrap;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
-    transition: background 0.2s, border-color 0.2s, transform 0.15s;
-  }
-  .theme-option:hover { transform: translateX(-4px); background: var(--border); }
-  .theme-option.active { border-color: var(--accent); color: var(--accent); }
-
-  .theme-dot {
-    width: 14px; height: 14px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    border: 2px solid rgba(255,255,255,0.2);
-  }
-  .dot-dark   { background: linear-gradient(135deg, #e879a0, #c084fc); }
-  .dot-light  { background: linear-gradient(135deg, #d63384, #9333ea); }
-  .dot-neon   { background: linear-gradient(135deg, #00ffcc, #ff00ff); }
-  .dot-sepia  { background: linear-gradient(135deg, #e8a87c, #c4956a); }
-  .dot-abyss  { background: #000; border: 2px solid #e879a0; }
-
-  /* Neon especial: glow */
-  [data-theme="neon"] .play-btn,
-  [data-theme="neon"] .btn-confirm {
-    box-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent2);
-  }
-  [data-theme="neon"] .wave-bar { box-shadow: 0 0 6px var(--accent); }
-  [data-theme="neon"] body::before {
-    background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(0,255,204,0.08), transparent 70%);
-  }
+  :root { --bg:#0d0b12; --card:#1a1625; --border:#2e2840; --accent:#e879a0; --accent2:#c084fc; --correct:#4ade80; --wrong:#f87171; --skip:#facc15; --text:#f5f0ff; --muted:#7a6e90; --shadow:rgba(232,121,160,.35); }
+  [data-theme="light"] { --bg:#f7f4fb; --card:#ffffff; --border:#e0d8f0; --accent:#d63384; --accent2:#9333ea; --correct:#16a34a; --wrong:#dc2626; --skip:#ca8a04; --text:#1e1230; --muted:#8b7aaa; --shadow:rgba(214,51,132,.25); }
+  [data-theme="neon"] { --bg:#050510; --card:#0d0d2b; --border:#1a1a4e; --accent:#00ffcc; --accent2:#ff00ff; --correct:#00ff88; --wrong:#ff2244; --skip:#ffee00; --text:#e0f0ff; --muted:#4466aa; --shadow:rgba(0,255,204,.4); }
+  [data-theme="sepia"] { --bg:#1c150d; --card:#2a1f12; --border:#3e2f1c; --accent:#e8a87c; --accent2:#c4956a; --correct:#7ab87a; --wrong:#c96b6b; --skip:#d4a84b; --text:#f0e6d3; --muted:#8a6e52; --shadow:rgba(232,168,124,.35); }
+  [data-theme="abyss"] { --bg:#000000; --card:#0a0a0a; --border:#1a1a1a; --accent:#e879a0; --accent2:#c084fc; --correct:#4ade80; --wrong:#f87171; --skip:#facc15; --text:#f0f0f0; --muted:#555555; --shadow:rgba(232,121,160,.3); }
+  
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:0 0 80px; position:relative; overflow-x:hidden; transition:background 0.4s ease,color 0.4s ease; }
+  body::before { content:''; position:fixed; inset:0; background:radial-gradient(ellipse 60% 40% at 50% 0%,color-mix(in srgb,var(--accent) 8%,transparent),transparent 70%); pointer-events:none; z-index:0; transition:background 0.4s ease; }
+  
+  header { display:flex; justify-content:space-between; align-items:center; width:100%; max-width:520px; padding:15px 20px; border-bottom:1px solid var(--border); margin-bottom:10px; z-index:10; transition:border-color 0.3s; }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo-avatar { width:40px; height:40px; border-radius:50%; overflow:hidden; border:2px solid var(--accent); background:var(--border); transition:border-color 0.3s; }
+  .logo-avatar img { width:100%; height:100%; object-fit:cover; }
+  .logo-text { display:flex; gap:2px; }
+  .logo-iu { font-family:'Playfair Display',serif; font-size:20px; color:var(--accent); font-weight:700; transition:color 0.3s; }
+  .logo-heardle { font-family:'Playfair Display',serif; font-size:20px; color:var(--text); font-weight:400; transition:color 0.3s; }
+  
+  .header-actions { display:flex; align-items:center; gap:10px; }
+  .lang-switcher { display:flex; border:1px solid var(--border); border-radius:6px; overflow:hidden; background:var(--card); transition:background 0.3s,border-color 0.3s; }
+  .lang-btn { background:none; border:none; color:var(--muted); padding:5px 8px; font-size:11px; cursor:pointer; font-weight:bold; transition:background 0.2s,color 0.2s; }
+  .lang-btn.active { background:var(--accent); color:#fff; }
+  .icon-btn { background:var(--card); border:1px solid var(--border); color:var(--text); padding:6px 10px; border-radius:8px; cursor:pointer; font-size:16px; display:flex; align-items:center; transition:background 0.2s,border-color 0.3s; }
+  .icon-btn:hover { background:var(--border); }
+  
+  .app { width:100%; max-width:520px; padding:0 20px; position:relative; z-index:1; }
+  .bars { display:flex; gap:6px; margin:20px 0 10px; }
+  .bar { flex:1; height:8px; border-radius:4px; background:var(--border); transition:background 0.3s; }
+  .bar.correct { background:var(--correct); }
+  .bar.wrong { background:var(--wrong); }
+  .bar.skipped { background:var(--skip); }
+  
+  .player-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:25px 20px; margin-top:10px; display:flex; flex-direction:column; align-items:center; gap:15px; transition:background 0.3s,border-color 0.3s; }
+  .waveform { display:flex; align-items:center; gap:3px; height:40px; }
+  .wave-bar { width:4px; background:var(--border); border-radius:2px; transition:background 0.3s; }
+  .waveform.playing .wave-bar { background:var(--accent); animation:wave-anim 0.6s ease-in-out infinite alternate; }
+  @keyframes wave-anim { 0% { height:6px; } 100% { height:30px; } }
+  
+  .play-btn { width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); border:none; color:white; font-size:24px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px var(--shadow); transition:background 0.3s,box-shadow 0.3s; }
+  .play-btn:hover { transform:scale(1.05); }
+  
+  .timer-track { width:100%; height:6px; background:var(--border); border-radius:3px; overflow:hidden; transition:background 0.3s; }
+  .timer-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); width:0%; transition:width 0.1s linear,background 0.3s; }
+  
+  .guesses-list { margin-top:20px; display:flex; flex-direction:column; gap:8px; }
+  .guess-item { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 16px; font-size:14px; color:var(--text); transition:background 0.3s,border-color 0.3s,color 0.3s; }
+  
+  .input-section { margin-top:20px; position:relative; }
+  .song-input { width:100%; background:var(--card); border:1px solid var(--border); color:var(--text); padding:14px; border-radius:12px; outline:none; font-size:15px; transition:background 0.3s,border-color 0.3s,color 0.3s; }
+  .song-input::placeholder { color:var(--muted); }
+  .autocomplete { position:absolute; bottom:100%; left:0; right:0; background:var(--card); border:1px solid var(--border); border-radius:12px; z-index:100; max-height:200px; overflow-y:auto; display:none; margin-bottom:5px; box-shadow:0 -10px 30px rgba(0,0,0,0.5); transition:background 0.3s; }
+  .autocomplete.show { display:block; }
+  .ac-item { padding:12px 16px; font-size:14px; cursor:pointer; border-bottom:1px solid var(--border); color:var(--text); transition:background 0.2s; }
+  .ac-item:hover { background:var(--border); color:var(--accent); }
+  
+  .btn-row { display:flex; gap:10px; margin-top:15px; }
+  .btn { flex:1; padding:15px; border:none; border-radius:12px; font-weight:700; cursor:pointer; font-size:14px; transition:0.2s; }
+  .btn-skip { background:var(--card); color:var(--muted); border:1px solid var(--border); }
+  .btn-skip:hover { background:var(--border); }
+  .btn-confirm { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white; }
+  .btn-confirm:hover { opacity:0.9; }
+  
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:20px 0; }
+  .stat-box { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px 6px; display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .stat-number { font-size:28px; font-weight:700; color:var(--accent); line-height:1; }
+  .stat-label { font-size:10px; color:var(--muted); text-align:center; text-transform:uppercase; letter-spacing:0.5px; }
+  
+  .dist-section { margin-top:10px; text-align:left; }
+  .dist-title { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+  .dist-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:13px; }
+  .dist-num { width:14px; text-align:right; color:var(--muted); font-weight:600; flex-shrink:0; }
+  .dist-bar-wrap { flex:1; background:var(--border); border-radius:4px; overflow:hidden; height:20px; }
+  .dist-bar-fill { height:100%; background:var(--accent); border-radius:4px; min-width:4px; display:flex; align-items:center; justify-content:flex-end; padding-right:6px; font-size:11px; color:white; font-weight:700; transition:width 0.6s ease; }
+  .dist-bar-fill.highlight { background:linear-gradient(90deg,var(--accent),var(--accent2)); }
+  
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:200; display:none; align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.show { display:flex; }
+  .modal-content { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:30px; width:100%; max-width:400px; text-align:center; transition:background 0.3s,border-color 0.3s; }
+  .modal-title { font-family:'Playfair Display',serif; font-size:18px; margin-bottom:4px; }
+  .album-art { width:180px; height:180px; border-radius:12px; object-fit:cover; margin:20px 0; border:1px solid var(--border); }
+  
+  .theme-switcher { position:fixed; bottom:24px; right:20px; z-index:1000; display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+  .theme-toggle-btn { width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); border:none; color:white; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px var(--shadow); transition:transform 0.3s ease,box-shadow 0.3s; }
+  .theme-toggle-btn:hover { transform:scale(1.1); }
+  .theme-toggle-btn.open { transform:rotate(45deg); }
+  
+  .theme-options { display:flex; flex-direction:column; gap:8px; opacity:0; pointer-events:none; transform:translateY(10px) scale(0.95); transition:opacity 0.25s ease,transform 0.25s ease; }
+  .theme-options.visible { opacity:1; pointer-events:all; transform:translateY(0) scale(1); }
+  .theme-option { display:flex; align-items:center; gap:10px; padding:8px 14px 8px 10px; border-radius:30px; border:1px solid var(--border); background:var(--card); color:var(--text); cursor:pointer; font-size:13px; font-weight:600; white-space:nowrap; box-shadow:0 2px 12px rgba(0,0,0,0.3); transition:background 0.2s,border-color 0.2s,transform 0.15s; }
+  .theme-option:hover { transform:translateX(-4px); background:var(--border); }
+  .theme-option.active { border-color:var(--accent); color:var(--accent); }
+  .theme-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; border:2px solid rgba(255,255,255,0.2); }
+  .dot-dark { background:linear-gradient(135deg,#e879a0,#c084fc); }
+  .dot-light { background:linear-gradient(135deg,#d63384,#9333ea); }
+  .dot-neon { background:linear-gradient(135deg,#00ffcc,#ff00ff); }
+  .dot-sepia { background:linear-gradient(135deg,#e8a87c,#c4956a); }
+  .dot-abyss { background:#000; border:2px solid #e879a0; }
+  
+  [data-theme="neon"] .play-btn { box-shadow:0 0 20px var(--accent),0 0 40px var(--accent2); }
+  [data-theme="neon"] .btn-confirm { box-shadow:0 0 20px var(--accent),0 0 40px var(--accent2); }
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">
-
-    <div class="logo-avatar">
-      <img src="iuHeart-2x.gif" alt="IU" style="width:100%;height:100%;object-fit:cover;">
-    </div>
+    <div class="logo-avatar"><img src="iuHeart-2x.gif" alt="IU"></div>
     <div class="logo-text">
-      <span class="logo-iu">IU</span><span class="logo-heardle"> Heardle</span>
+      <span class="logo-iu">IU</span><span class="logo-heardle">Heardle</span>
     </div>
   </div>
-
   <div class="header-actions">
-    <div class="lang-switcher">
-      <button class="lang-btn active">PT</button>
-      <button class="lang-btn">EN</button>
-      <button class="lang-btn">ES</button>
-    </div>
+    <div class="lang-switcher" id="langSwitcher"></div>
     <button class="icon-btn" id="statsBtn">📊</button>
     <button class="icon-btn" id="newBtn">🔄</button>
   </div>
@@ -390,390 +127,381 @@
 
 <div class="app">
   <div class="bars" id="barsContainer"></div>
-
   <div class="player-card">
     <div class="waveform" id="waveform"></div>
     <button class="play-btn" id="playBtn">▶</button>
-    <p id="statusText" style="font-size:12px; color:var(--muted);">Pronto! Clique ▶</p>
+    <p id="statusText" style="font-size:12px;color:var(--muted);">Pronto! Clique ▶</p>
     <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
-    <div id="timerLabel" style="font-size:11px; color:var(--muted); width:100%; text-align:right;">0.0s / 1s</div>
+    <div id="timerLabel" style="font-size:11px;color:var(--muted);width:100%;text-align:right;">0.0s / 1s</div>
   </div>
-
   <div class="guesses-list" id="guessesList"></div>
-
   <div class="input-section">
     <div class="autocomplete" id="autocomplete"></div>
-    <input class="song-input" type="text" id="songInput" placeholder="seu palpite aqui…" autocomplete="off">
+    <input class="song-input" type="text" id="songInput" autocomplete="off">
   </div>
-
   <div class="btn-row">
-    <button class="btn btn-skip" id="skipBtn">⏭ Pular (+1s)</button>
-    <button class="btn btn-confirm" id="confirmBtn">✓ Confirmar</button>
+    <button class="btn btn-skip" id="skipBtn"></button>
+    <button class="btn btn-confirm" id="confirmBtn"></button>
   </div>
 </div>
 
-<!-- MODAL STATS -->
+<!-- STATS MODAL -->
 <div class="modal-overlay" id="statsModal">
   <div class="modal-content">
-    <p class="stats-modal-title">📊 Estatísticas</p>
-    <p style="font-size:12px; color:var(--muted); margin-bottom:4px;" id="statsSubtitle">Seu histórico de partidas</p>
-
-    <div class="stats-grid">
-      <div class="stat-box"><span class="stat-number" id="st-played">0</span><span class="stat-label">Partidas</span></div>
-      <div class="stat-box"><span class="stat-number" id="st-wins">0</span><span class="stat-label">Vitórias</span></div>
-      <div class="stat-box"><span class="stat-number" id="st-streak">0</span><span class="stat-label">Sequência</span></div>
-      <div class="stat-box"><span class="stat-number" id="st-best">0</span><span class="stat-label">Melhor</span></div>
-    </div>
-
-    <div class="dist-section">
-      <p class="dist-title">Distribuição de tentativas</p>
-      <div id="distRows"></div>
-    </div>
-
-    <button class="stats-reset-btn" id="statsResetBtn">🗑 Resetar estatísticas</button>
-    <button id="statsCloseBtn" style="margin-top:8px; width:100%; padding:12px; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">Fechar</button>
+    <p class="modal-title" id="statsTitle">📊</p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:4px;" id="statsSubtitle"></p>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="dist-section" id="distSection"></div>
+    <button id="statsResetBtn" class="btn btn-skip" style="margin-top:16px;"></button>
+    <button id="statsCloseBtn" class="btn btn-confirm" style="margin-top:8px;"></button>
   </div>
 </div>
 
-<!-- MODAL RESULT -->
+<!-- RESULT MODAL -->
 <div class="modal-overlay" id="resultModal">
   <div class="modal-content">
     <h2 id="resultTitle" style="font-family:'Playfair Display';"></h2>
-    <div id="albumArtWrapper" style="width:180px;height:180px;margin:20px auto;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--border);display:flex;align-items:center;justify-content:center;position:relative;">
-      <img id="albumArt" src="" style="width:100%;height:100%;object-fit:cover;display:block;"
-        onerror="this.onerror=null;this.style.display='none';document.getElementById('albumFallback').style.display='flex'">
-      <div id="albumFallback" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:48px;">🎵</div>
+    <div id="albumArtWrapper" style="width:180px;height:180px;margin:20px auto;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--border);display:flex;align-items:center;justify-content:center;">
+      <img id="albumArt" src="" class="album-art" onerror="this.style.display='none';document.getElementById('albumFallback').style.display='flex'">
+      <div id="albumFallback" style="display:none;align-items:center;justify-content:center;font-size:48px;width:100%;">🎵</div>
     </div>
-    <p id="resultSongName" style="font-size:20px; color:var(--accent); font-weight:bold;"></p>
-    <p id="resultAlbum" style="color:var(--muted); font-size:14px; margin-bottom:20px;"></p>
-    <button id="againBtn" style="width:100%; padding:15px; background:var(--accent); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">🔄 Jogar Novamente</button>
+    <p id="resultSongName" style="font-size:20px;color:var(--accent);font-weight:bold;"></p>
+    <p id="resultAlbum" style="color:var(--muted);font-size:14px;margin-bottom:20px;"></p>
+    <button id="againBtn" class="btn btn-confirm"></button>
   </div>
 </div>
 
-<!-- ─── THEME SWITCHER ─── -->
+<!-- THEME SWITCHER -->
 <div class="theme-switcher">
-  <div class="theme-options" id="themeOptions">
-    <button class="theme-option" data-theme="dark">
-      <span class="theme-dot dot-dark"></span> Dark
-    </button>
-    <button class="theme-option" data-theme="light">
-      <span class="theme-dot dot-light"></span> Light
-    </button>
-    <button class="theme-option" data-theme="neon">
-      <span class="theme-dot dot-neon"></span> Neon
-    </button>
-    <button class="theme-option" data-theme="sepia">
-      <span class="theme-dot dot-sepia"></span> Sepia
-    </button>
-    <button class="theme-option" data-theme="abyss">
-      <span class="theme-dot dot-abyss"></span> Abyss
-    </button>
-  </div>
+  <div class="theme-options" id="themeOptions"></div>
   <button class="theme-toggle-btn" id="themeToggleBtn" title="Mudar tema">🎨</button>
 </div>
 
 <script src="database.js"></script>
 <script>
-  /* ─── THEME SWITCHER ─── */
-  const themeToggleBtn = document.getElementById('themeToggleBtn');
-  const themeOptions   = document.getElementById('themeOptions');
-  const html           = document.documentElement;
-
-  let themeOpen = false;
-
-  themeToggleBtn.addEventListener('click', () => {
-    themeOpen = !themeOpen;
-    themeOptions.classList.toggle('visible', themeOpen);
-    themeToggleBtn.classList.toggle('open', themeOpen);
-  });
-
-  document.querySelectorAll('.theme-option').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const theme = btn.dataset.theme;
-      html.setAttribute('data-theme', theme);
-      document.querySelectorAll('.theme-option').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      themeOpen = false;
-      themeOptions.classList.remove('visible');
-      themeToggleBtn.classList.remove('open');
-      localStorage.setItem('iu-heardle-theme', theme);
-    });
-  });
-
-  // Restaurar tema salvo
-  const savedTheme = localStorage.getItem('iu-heardle-theme') || 'dark';
-  html.setAttribute('data-theme', savedTheme);
-  document.querySelector(`.theme-option[data-theme="${savedTheme}"]`)?.classList.add('active');
-
-  // Fechar ao clicar fora
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.theme-switcher')) {
-      themeOpen = false;
-      themeOptions.classList.remove('visible');
-      themeToggleBtn.classList.remove('open');
-    }
-  });
-
-  /* ─── JOGO ─── */
-  const DURATIONS = [1, 2, 4, 7, 11, 16];
-  let currentSong = null, attempt = 0, guesses = [], isPlaying = false, audio = null, timerInterval = null;
-  let gameOver = false;
-
-  const i18n = {
-    PT: {
-      status:      "Pronto! Clique ▶",
-      placeholder: "seu palpite aqui…",
-      skip:        "⏭ Pular (+1s)",
-      confirm:     "✓ Confirmar",
-      wonTitle:    "🎉 Você acertou!",
-      lostTitle:   "😔 Não foi dessa vez!",
-      playAgain:   "🔄 Jogar Novamente",
-      statsTitle:  "📊 Estatísticas",
-      statsHist:   "Seu histórico de partidas",
-      statsPlayed: "Partidas",
-      statsWins:   "Vitórias",
-      statsStreak: "Sequência",
-      statsBest:   "Melhor",
-      statsDist:   "Distribuição de tentativas",
-      statsReset:  "🗑 Resetar estatísticas",
-      statsClose:  "Fechar",
-      statsWinPct: "de aproveitamento"
+  // ─── CONFIG ─── 
+  const CONFIG = {
+    DURATIONS: [1, 2, 4, 7, 11, 16],
+    STATS_KEY: 'iu-heardle-stats',
+    THEME_KEY: 'iu-heardle-theme',
+    WAVEFORM_BARS: 25,
+    THEMES: ['dark', 'light', 'neon', 'sepia', 'abyss'],
+    I18N: {
+      PT: {
+        status: "Pronto! Clique ▶",
+        placeholder: "seu palpite aqui…",
+        skip: "⏭ Pular (+1s)",
+        confirm: "✓ Confirmar",
+        wonTitle: "🎉 Você acertou!",
+        lostTitle: "😔 Não foi dessa vez!",
+        playAgain: "🔄 Jogar Novamente",
+        statsTitle: "📊 Estatísticas",
+        statsHist: "Seu histórico de partidas",
+        statsLabels: ["Partidas", "Vitórias", "Sequência", "Melhor"],
+        statsDist: "Distribuição de tentativas",
+        statsReset: "🗑 Resetar",
+        statsClose: "Fechar",
+        statsWinPct: "de aproveitamento"
+      },
+      EN: {
+        status: "Ready! Click ▶",
+        placeholder: "your guess here…",
+        skip: "⏭ Skip (+1s)",
+        confirm: "✓ Confirm",
+        wonTitle: "🎉 You got it!",
+        lostTitle: "😔 Not this time!",
+        playAgain: "🔄 Play Again",
+        statsTitle: "📊 Statistics",
+        statsHist: "Your match history",
+        statsLabels: ["Played", "Wins", "Streak", "Best"],
+        statsDist: "Guess distribution",
+        statsReset: "🗑 Reset",
+        statsClose: "Close",
+        statsWinPct: "win rate"
+      },
+      ES: {
+        status: "¡Listo! Clic ▶",
+        placeholder: "tu respuesta aquí…",
+        skip: "⏭ Saltar (+1s)",
+        confirm: "✓ Confirmar",
+        wonTitle: "🎉 ¡Lo lograste!",
+        lostTitle: "😔 ¡Otra vez será!",
+        playAgain: "🔄 Jugar de Nuevo",
+        statsTitle: "📊 Estadísticas",
+        statsHist: "Tu historial de partidas",
+        statsLabels: ["Partidas", "Victorias", "Racha", "Mejor"],
+        statsDist: "Distribución de intentos",
+        statsReset: "🗑 Reiniciar",
+        statsClose: "Cerrar",
+        statsWinPct: "de rendimiento"
+      }
     },
-    EN: {
-      status:      "Ready! Click ▶",
-      placeholder: "your guess here…",
-      skip:        "⏭ Skip (+1s)",
-      confirm:     "✓ Confirm",
-      wonTitle:    "🎉 You got it!",
-      lostTitle:   "😔 Not this time!",
-      playAgain:   "🔄 Play Again",
-      statsTitle:  "📊 Statistics",
-      statsHist:   "Your match history",
-      statsPlayed: "Played",
-      statsWins:   "Wins",
-      statsStreak: "Streak",
-      statsBest:   "Best",
-      statsDist:   "Guess distribution",
-      statsReset:  "🗑 Reset statistics",
-      statsClose:  "Close",
-      statsWinPct: "win rate"
-    },
-    ES: {
-      status:      "¡Listo! Clic ▶",
-      placeholder: "tu respuesta aquí…",
-      skip:        "⏭ Saltar (+1s)",
-      confirm:     "✓ Confirmar",
-      wonTitle:    "🎉 ¡Lo lograste!",
-      lostTitle:   "😔 ¡Otra vez será!",
-      playAgain:   "🔄 Jugar de Nuevo",
-      statsTitle:  "📊 Estadísticas",
-      statsHist:   "Tu historial de partidas",
-      statsPlayed: "Partidas",
-      statsWins:   "Victorias",
-      statsStreak: "Racha",
-      statsBest:   "Mejor",
-      statsDist:   "Distribución de intentos",
-      statsReset:  "🗑 Resetear estadísticas",
-      statsClose:  "Cerrar",
-      statsWinPct: "de rendimiento"
+    THEME_DOTS: {
+      dark: 'dot-dark',
+      light: 'dot-light',
+      neon: 'dot-neon',
+      sepia: 'dot-sepia',
+      abyss: 'dot-abyss'
     }
   };
 
-  let currentLang = 'PT';
+  // ─── STATE ─── 
+  const STATE = {
+    currentSong: null,
+    attempt: 0,
+    guesses: [],
+    isPlaying: false,
+    audio: null,
+    timerInterval: null,
+    gameOver: false,
+    currentLang: 'PT',
+    currentTheme: localStorage.getItem(CONFIG.THEME_KEY) || 'dark'
+  };
 
-  function setLanguage(lang) {
-    currentLang = lang;
-    const t = i18n[lang];
-    document.getElementById("statusText").textContent  = t.status;
-    document.getElementById("songInput").placeholder   = t.placeholder;
-    document.getElementById("skipBtn").textContent     = t.skip;
-    document.getElementById("confirmBtn").textContent  = t.confirm;
-    document.getElementById("againBtn").textContent    = t.playAgain;
-    // Stats modal
-    document.querySelector(".stats-modal-title").textContent      = t.statsTitle;
-    document.getElementById("statsSubtitle").textContent          = t.statsHist;
-    document.querySelectorAll(".stat-label")[0].textContent        = t.statsPlayed;
-    document.querySelectorAll(".stat-label")[1].textContent        = t.statsWins;
-    document.querySelectorAll(".stat-label")[2].textContent        = t.statsStreak;
-    document.querySelectorAll(".stat-label")[3].textContent        = t.statsBest;
-    document.querySelector(".dist-title").textContent              = t.statsDist;
-    document.getElementById("statsResetBtn").textContent           = t.statsReset;
-    document.getElementById("statsCloseBtn").textContent           = t.statsClose;
-    document.querySelectorAll(".lang-btn").forEach(btn => {
-      btn.classList.toggle("active", btn.textContent === lang);
+  // ─── UTILS ─── 
+  const DOM = {
+    get: (id) => document.getElementById(id),
+    qs: (sel) => document.querySelector(sel),
+    qsa: (sel) => document.querySelectorAll(sel)
+  };
+
+  const i18n = (key) => CONFIG.I18N[STATE.currentLang][key];
+
+  // ─── THEME ─── 
+  function initThemes() {
+    const container = DOM.get('themeOptions');
+    container.innerHTML = CONFIG.THEMES.map(t => `
+      <button class="theme-option" data-theme="${t}">
+        <span class="theme-dot ${CONFIG.THEME_DOTS[t]}"></span> ${t.charAt(0).toUpperCase() + t.slice(1)}
+      </button>
+    `).join('');
+
+    DOM.qs(`[data-theme="${STATE.currentTheme}"]`).classList.add('active');
+    document.documentElement.setAttribute('data-theme', STATE.currentTheme);
+
+    DOM.qsa('.theme-option').forEach(btn => {
+      btn.addEventListener('click', () => setTheme(btn.dataset.theme));
     });
   }
 
-  document.querySelectorAll(".lang-btn").forEach(btn => {
-    btn.addEventListener("click", () => setLanguage(btn.textContent));
+  function setTheme(theme) {
+    STATE.currentTheme = theme;
+    document.documentElement.setAttribute('data-theme', theme);
+    DOM.qsa('.theme-option').forEach(b => b.classList.remove('active'));
+    DOM.qs(`[data-theme="${theme}"]`).classList.add('active');
+    localStorage.setItem(CONFIG.THEME_KEY, theme);
+    closeThemeMenu();
+  }
+
+  function openThemeMenu() {
+    const btn = DOM.get('themeToggleBtn');
+    const opts = DOM.get('themeOptions');
+    opts.classList.add('visible');
+    btn.classList.add('open');
+  }
+
+  function closeThemeMenu() {
+    DOM.get('themeOptions').classList.remove('visible');
+    DOM.get('themeToggleBtn').classList.remove('open');
+  }
+
+  DOM.get('themeToggleBtn').addEventListener('click', () => {
+    DOM.get('themeOptions').classList.contains('visible') ? closeThemeMenu() : openThemeMenu();
   });
 
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.theme-switcher')) closeThemeMenu();
+  });
+
+  // ─── LANGUAGE ─── 
+  function initLanguages() {
+    const container = DOM.get('langSwitcher');
+    container.innerHTML = Object.keys(CONFIG.I18N).map(lang => 
+      `<button class="lang-btn" data-lang="${lang}">${lang}</button>`
+    ).join('');
+
+    DOM.qs('[data-lang="PT"]').classList.add('active');
+
+    DOM.qsa('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+    });
+  }
+
+  function setLanguage(lang) {
+    STATE.currentLang = lang;
+    DOM.get('statusText').textContent = i18n('status');
+    DOM.get('songInput').placeholder = i18n('placeholder');
+    DOM.get('skipBtn').textContent = i18n('skip');
+    DOM.get('confirmBtn').textContent = i18n('confirm');
+    DOM.get('againBtn').textContent = i18n('playAgain');
+    DOM.qsa('.lang-btn').forEach(b => b.classList.remove('active'));
+    DOM.qs(`[data-lang="${lang}"]`).classList.add('active');
+  }
+
+  // ─── WAVEFORM ─── 
+  function buildWaveform() {
+    DOM.get('waveform').innerHTML = Array(CONFIG.WAVEFORM_BARS).fill(0)
+      .map(() => '<div class="wave-bar" style="height:10px;"></div>').join('');
+  }
+
+  // ─── GAME LOGIC ─── 
   function init() {
     if (typeof musicasIU === 'undefined') {
       alert("Erro: database.js não encontrado!");
       return;
     }
-    gameOver = false;
-    attempt  = 0;
-    guesses  = [];
 
-    // Limpar audio anterior se existir
-    if (audio) { try { audio.pause(); } catch(e){} audio = null; }
+    STATE.gameOver = false;
+    STATE.attempt = 0;
+    STATE.guesses = [];
 
-    currentSong = musicasIU[Math.floor(Math.random() * musicasIU.length)];
+    if (STATE.audio) {
+      try { STATE.audio.pause(); } catch(e){}
+      STATE.audio = null;
+    }
 
-    // Pré-carrega o audio mas não toca (evita bloqueio de autoplay)
-    audio = new Audio();
-    audio.preload = "none";
-    audio.src = currentSong.file;
+    STATE.currentSong = musicasIU[Math.floor(Math.random() * musicasIU.length)];
+    STATE.audio = new Audio();
+    STATE.audio.preload = "none";
+    STATE.audio.src = STATE.currentSong.file;
 
     renderBars();
     buildWaveform();
-    document.getElementById("songInput").value        = "";
-    document.getElementById("guessesList").innerHTML  = "";
-    document.getElementById("timerFill").style.width  = "0%";
-    document.getElementById("timerLabel").textContent = "0.0s / 1s";
-    setLanguage(currentLang);
+    DOM.get('songInput').value = '';
+    DOM.get('guessesList').innerHTML = '';
+    DOM.get('timerFill').style.width = '0%';
+    DOM.get('timerLabel').textContent = '0.0s / 1s';
+    setLanguage(STATE.currentLang);
   }
 
   function handlePlay() {
-    if (!currentSong || !audio) return;
-    if (isPlaying) { pauseAudio(); return; }
+    if (!STATE.currentSong || !STATE.audio) return;
+    if (STATE.isPlaying) return pauseAudio();
 
-    const maxDur = DURATIONS[attempt];
-    audio.currentTime = 0;
-    audio.play().catch(err => {
-      console.warn("Play bloqueado:", err);
-      document.getElementById("statusText").textContent = "Toque novamente ▶";
+    const maxDur = CONFIG.DURATIONS[STATE.attempt];
+    STATE.audio.currentTime = 0;
+    STATE.audio.play().catch(() => {
+      DOM.get('statusText').textContent = 'Toque novamente ▶';
     });
-    isPlaying = true;
-    document.getElementById("playBtn").textContent = "⏸";
-    document.getElementById("waveform").classList.add("playing");
+
+    STATE.isPlaying = true;
+    DOM.get('playBtn').textContent = '⏸';
+    DOM.get('waveform').classList.add('playing');
 
     let elapsed = 0;
-    timerInterval = setInterval(() => {
+    STATE.timerInterval = setInterval(() => {
       elapsed += 0.1;
-      document.getElementById("timerFill").style.width = Math.min((elapsed / maxDur) * 100, 100) + "%";
-      document.getElementById("timerLabel").textContent = elapsed.toFixed(1) + "s / " + maxDur + "s";
+      DOM.get('timerFill').style.width = Math.min((elapsed / maxDur) * 100, 100) + '%';
+      DOM.get('timerLabel').textContent = elapsed.toFixed(1) + 's / ' + maxDur + 's';
       if (elapsed >= maxDur) pauseAudio();
     }, 100);
   }
 
   function pauseAudio() {
-    if (!audio) return;
-    audio.pause();
-    clearInterval(timerInterval);
-    isPlaying = false;
-    document.getElementById("playBtn").textContent = "▶";
-    document.getElementById("waveform").classList.remove("playing");
+    if (!STATE.audio) return;
+    STATE.audio.pause();
+    clearInterval(STATE.timerInterval);
+    STATE.isPlaying = false;
+    DOM.get('playBtn').textContent = '▶';
+    DOM.get('waveform').classList.remove('playing');
   }
 
   function selectSong(title) {
-    document.getElementById("songInput").value = title;
-    document.getElementById("autocomplete").classList.remove("show");
+    DOM.get('songInput').value = title;
+    DOM.get('autocomplete').classList.remove('show');
   }
 
-  document.getElementById("songInput").addEventListener("input", (e) => {
-    const q = e.target.value.toLowerCase();
-    const ac = document.getElementById("autocomplete");
-    if (!q) { ac.classList.remove("show"); return; }
-    const matches = musicasIU.filter(s => s.title.toLowerCase().includes(q)).slice(0, 5);
-    ac.innerHTML = matches.map(m => `<div class="ac-item" onclick="selectSong('${m.title}')">${m.title}</div>`).join('');
-    ac.classList.add("show");
-  });
-
   function submitGuess() {
-    const val = document.getElementById("songInput").value.trim();
-    if (!val || gameOver) return;
-    const correct = val.toLowerCase() === currentSong.title.toLowerCase();
-    guesses.push({ title: val, correct });
+    const val = DOM.get('songInput').value.trim();
+    if (!val || STATE.gameOver) return;
+
+    const correct = val.toLowerCase() === STATE.currentSong.title.toLowerCase();
+    STATE.guesses.push({ title: val, correct, skipped: false });
+
     if (correct) {
-      renderBars(); renderGuesses(); showResult(true);
+      renderBars();
+      renderGuesses();
+      showResult(true);
     } else {
-      attempt++;
-      renderBars(); renderGuesses();
-      if (attempt >= 6) showResult(false);
-      else document.getElementById("songInput").value = "";
+      STATE.attempt++;
+      renderBars();
+      renderGuesses();
+      if (STATE.attempt >= 6) showResult(false);
+      else DOM.get('songInput').value = '';
     }
   }
 
   function skip() {
-    if (gameOver) return;
-    guesses.push({ title: "Pulou", correct: false, skipped: true });
-    attempt++;
-    renderBars(); renderGuesses();
-    if (attempt >= 6) showResult(false);
+    if (STATE.gameOver) return;
+    STATE.guesses.push({ title: 'Pulou', correct: false, skipped: true });
+    STATE.attempt++;
+    renderBars();
+    renderGuesses();
+    if (STATE.attempt >= 6) showResult(false);
   }
 
   function renderBars() {
-    document.getElementById("barsContainer").innerHTML = Array.from({ length: 6 }, (_, i) => {
-      let cls = "bar";
-      if (i < guesses.length) cls += guesses[i].correct ? " correct" : (guesses[i].skipped ? " skipped" : " wrong");
+    DOM.get('barsContainer').innerHTML = Array(6).fill(0).map((_, i) => {
+      let cls = 'bar';
+      if (i < STATE.guesses.length) {
+        cls += STATE.guesses[i].correct ? ' correct' : (STATE.guesses[i].skipped ? ' skipped' : ' wrong');
+      }
       return `<div class="${cls}"></div>`;
     }).join('');
   }
 
   function renderGuesses() {
-    document.getElementById("guessesList").innerHTML = guesses.map(g =>
+    DOM.get('guessesList').innerHTML = STATE.guesses.map(g => 
       `<div class="guess-item">${g.title}</div>`
     ).join('');
   }
 
   function showResult(won) {
-    gameOver = true;
+    STATE.gameOver = true;
     pauseAudio();
-    recordResult(won, attempt);
-    const t = i18n[currentLang];
-    document.getElementById("resultModal").classList.add("show");
-    document.getElementById("resultTitle").textContent    = won ? t.wonTitle : t.lostTitle;
-    document.getElementById("resultSongName").textContent = currentSong.title;
-    document.getElementById("resultAlbum").textContent    = currentSong.album;
-    // Resetar estado do album art
-    const albumImg = document.getElementById("albumArt");
-    const albumFallback = document.getElementById("albumFallback");
-    albumImg.style.display = "block";
-    albumFallback.style.display = "none";
-    // Proxy para wikimedia (evita bloqueio de hotlink)
-    const coverUrl = currentSong.cover;
-    albumImg.src = coverUrl.includes("wikimedia.org")
+    recordResult(won, STATE.attempt);
+
+    DOM.get('resultModal').classList.add('show');
+    DOM.get('resultTitle').textContent = won ? i18n('wonTitle') : i18n('lostTitle');
+    DOM.get('resultSongName').textContent = STATE.currentSong.title;
+    DOM.get('resultAlbum').textContent = STATE.currentSong.album;
+    DOM.get('againBtn').textContent = i18n('playAgain');
+
+    const albumImg = DOM.get('albumArt');
+    const albumFallback = DOM.get('albumFallback');
+    albumImg.style.display = 'block';
+    albumFallback.style.display = 'none';
+
+    const coverUrl = STATE.currentSong.cover;
+    albumImg.src = coverUrl.includes('wikimedia.org')
       ? `https://images.weserv.nl/?url=${encodeURIComponent(coverUrl)}&w=180&h=180&fit=cover`
       : coverUrl;
-    document.getElementById("againBtn").textContent       = t.playAgain;
   }
 
-  function buildWaveform() {
-    const wf = document.getElementById("waveform");
-    wf.innerHTML = "";
-    for (let i = 0; i < 25; i++) {
-      wf.innerHTML += `<div class="wave-bar" style="height:10px;"></div>`;
+  // ─── AUTOCOMPLETE ─── 
+  DOM.get('songInput').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    const ac = DOM.get('autocomplete');
+    if (!q) { ac.classList.remove('show'); return; }
+    
+    const matches = musicasIU.filter(s => s.title.toLowerCase().includes(q)).slice(0, 5);
+    ac.innerHTML = matches.map(m => `<div class="ac-item" onclick="selectSong('${m.title}')">${m.title}</div>`).join('');
+    ac.classList.toggle('show', matches.length > 0);
+  });
+
+  // ─── STATS ─── 
+  function loadStats() {
+    try {
+      return JSON.parse(localStorage.getItem(CONFIG.STATS_KEY)) || {
+        played: 0, wins: 0, streak: 0, bestStreak: 0, dist: { 1:0, 2:0, 3:0, 4:0, 5:0, 6:0 }
+      };
+    } catch {
+      return { played: 0, wins: 0, streak: 0, bestStreak: 0, dist: { 1:0, 2:0, 3:0, 4:0, 5:0, 6:0 } };
     }
   }
 
-  document.getElementById("playBtn").addEventListener("click", handlePlay);
-  document.getElementById("confirmBtn").addEventListener("click", submitGuess);
-  document.getElementById("skipBtn").addEventListener("click", skip);
-  document.getElementById("againBtn").addEventListener("click", () => {
-    document.getElementById("resultModal").classList.remove("show");
-    init();
-  });
-  document.getElementById("newBtn").addEventListener("click", () => {
-    document.getElementById("resultModal").classList.remove("show");
-    init();
-  });
-  /* ─── ESTATÍSTICAS ─── */
-  const STATS_KEY = 'iu-heardle-stats';
-
-  function loadStats() {
-    try {
-      return JSON.parse(localStorage.getItem(STATS_KEY)) || {
-        played: 0, wins: 0, streak: 0, bestStreak: 0,
-        dist: { 1:0, 2:0, 3:0, 4:0, 5:0, 6:0 }
-      };
-    } catch { return { played:0, wins:0, streak:0, bestStreak:0, dist:{1:0,2:0,3:0,4:0,5:0,6:0} }; }
-  }
-
   function saveStats(s) {
-    localStorage.setItem(STATS_KEY, JSON.stringify(s));
+    localStorage.setItem(CONFIG.STATS_KEY, JSON.stringify(s));
   }
 
   function recordResult(won, attemptNum) {
@@ -793,48 +521,82 @@
 
   function openStats() {
     const s = loadStats();
-    document.getElementById('st-played').textContent = s.played;
-    document.getElementById('st-wins').textContent   = s.wins;
-    document.getElementById('st-streak').textContent = s.streak;
-    document.getElementById('st-best').textContent   = s.bestStreak;
+    const labels = i18n('statsLabels');
+    
+    // Render stats grid
+    DOM.get('statsGrid').innerHTML = [s.played, s.wins, s.streak, s.bestStreak]
+      .map((val, i) => `
+        <div class="stat-box">
+          <span class="stat-number">${val}</span>
+          <span class="stat-label">${labels[i]}</span>
+        </div>
+      `).join('');
 
     const winPct = s.played > 0 ? Math.round((s.wins / s.played) * 100) : 0;
-    document.getElementById('statsSubtitle').textContent = `${winPct}% ${i18n[currentLang].statsWinPct}`;
+    DOM.get('statsSubtitle').textContent = `${winPct}% ${i18n('statsWinPct')}`;
 
+    // Render distribution
     const max = Math.max(...Object.values(s.dist), 1);
-    const rows = document.getElementById('distRows');
-    rows.innerHTML = '';
-    for (let i = 1; i <= 6; i++) {
-      const val = s.dist[i] || 0;
+    const distRows = Array(6).fill(0).map((_, i) => {
+      const idx = i + 1;
+      const val = s.dist[idx] || 0;
       const pct = Math.round((val / max) * 100);
-      const isLast = gameOver && guesses.length === i && guesses[i-1]?.correct;
-      rows.innerHTML += `
+      const isLast = STATE.gameOver && STATE.guesses.length === idx && STATE.guesses[idx - 1]?.correct;
+      return `
         <div class="dist-row">
-          <span class="dist-num">${i}</span>
+          <span class="dist-num">${idx}</span>
           <div class="dist-bar-wrap">
-            <div class="dist-bar-fill ${isLast ? 'highlight' : ''}" style="width:${Math.max(pct,4)}%">${val > 0 ? val : ''}</div>
+            <div class="dist-bar-fill ${isLast ? 'highlight' : ''}" style="width:${Math.max(pct, 4)}%">${val > 0 ? val : ''}</div>
           </div>
         </div>`;
-    }
+    }).join('');
 
-    document.getElementById('statsModal').classList.add('show');
+    DOM.get('distSection').innerHTML = `
+      <p class="dist-title">${i18n('statsDist')}</p>
+      ${distRows}
+    `;
+
+    DOM.get('statsModal').classList.add('show');
   }
 
-  document.getElementById('statsCloseBtn').addEventListener('click', () => {
-    document.getElementById('statsModal').classList.remove('show');
+  // ─── EVENT LISTENERS ─── 
+  DOM.get('playBtn').addEventListener('click', handlePlay);
+  DOM.get('confirmBtn').addEventListener('click', submitGuess);
+  DOM.get('skipBtn').addEventListener('click', skip);
+
+  DOM.get('statsBtn').addEventListener('click', () => {
+    DOM.get('statsTitle').textContent = i18n('statsTitle');
+    DOM.get('statsResetBtn').textContent = i18n('statsReset');
+    DOM.get('statsCloseBtn').textContent = i18n('statsClose');
+    openStats();
   });
 
-  document.getElementById('statsResetBtn').addEventListener('click', () => {
+  DOM.get('statsCloseBtn').addEventListener('click', () => {
+    DOM.get('statsModal').classList.remove('show');
+  });
+
+  DOM.get('statsResetBtn').addEventListener('click', () => {
     if (confirm('Tem certeza que quer apagar todas as estatísticas?')) {
-      localStorage.removeItem(STATS_KEY);
+      localStorage.removeItem(CONFIG.STATS_KEY);
       openStats();
     }
   });
 
-  document.getElementById("statsBtn").addEventListener("click", openStats);
+  DOM.get('againBtn').addEventListener('click', () => {
+    DOM.get('resultModal').classList.remove('show');
+    init();
+  });
 
+  DOM.get('newBtn').addEventListener('click', () => {
+    DOM.get('resultModal').classList.remove('show');
+    init();
+  });
+
+  // ─── INIT ─── 
   function tryInit(attempts) {
     if (typeof musicasIU !== 'undefined') {
+      initThemes();
+      initLanguages();
       init();
     } else if (attempts > 0) {
       setTimeout(() => tryInit(attempts - 1), 200);
@@ -843,7 +605,7 @@
     }
   }
 
-  window.onload = () => tryInit(20);
+  window.addEventListener('load', () => tryInit(20));
 </script>
 </body>
 </html>

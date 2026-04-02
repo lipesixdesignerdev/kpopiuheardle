@@ -126,19 +126,30 @@ async function finishGame(won) {
   albumArt.src = '';
 
   // Fetch artwork dynamically in browser (bypasses CDN hotlink block on Vercel)
-  const cleanTitle = STATE.song.title.replace(/\([^)]+\)/g, '').trim();
-  const query = encodeURIComponent('IU ' + cleanTitle);
-  try {
-    const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=song&limit=1`);
-    const data = await res.json();
-    if (data.results && data.results.length > 0) {
-      albumArt.src = data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
-    } else {
-      albumArt.src = STATE.song.cover || 'iuHeart-2x.gif';
+  // Multi-strategy search to maximize hit rate
+  async function fetchArtwork() {
+    const cleanTitle = STATE.song.title.replace(/\([^)]+\)/g, '').trim();
+    const strategies = [
+      `IU ${cleanTitle}`,
+      `IU ${STATE.song.title}`,
+      `IU ${STATE.song.album}`,
+    ];
+    for (const term of strategies) {
+      try {
+        const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=song&country=kr&limit=5`);
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+          // Prefer results where artist name contains IU
+          const match = data.results.find(r => r.artistName && r.artistName.includes('IU')) || data.results[0];
+          if (match && match.artworkUrl100) {
+            return match.artworkUrl100.replace('100x100bb', '600x600bb');
+          }
+        }
+      } catch(e) { /* try next strategy */ }
     }
-  } catch(e) {
-    albumArt.src = STATE.song.cover || 'iuHeart-2x.gif';
+    return STATE.song.cover || 'iuHeart-2x.gif';
   }
+  albumArt.src = await fetchArtwork();
 }
 
 // ─── FEATURES: Alpha Browser & Autocomplete ───

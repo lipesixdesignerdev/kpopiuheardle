@@ -105,7 +105,7 @@ function updateGameView() {
   DOM.get('guessesList').innerHTML = STATE.guesses.map(g => `<div class="guess-item">${g.title}</div>`).join('');
 }
 
-function finishGame(won) {
+async function finishGame(won) {
   STATE.over = true; pauseAudio();
   const stats = getStats();
   stats.played++;
@@ -117,14 +117,34 @@ function finishGame(won) {
   DOM.get('resultTitle').textContent = i18n(won ? 'won' : 'lost');
   DOM.get('resultSongName').textContent = STATE.song.title;
   DOM.get('resultAlbum').textContent = STATE.song.album;
-  DOM.get('albumArt').src = STATE.song.cover;
+
+  // Reset album art visibility between games
+  const albumArt = DOM.get('albumArt');
+  const albumFallback = DOM.get('albumFallback');
+  albumArt.style.display = '';
+  albumFallback.style.display = 'none';
+  albumArt.src = '';
+
+  // Fetch artwork dynamically in browser (bypasses CDN hotlink block on Vercel)
+  const cleanTitle = STATE.song.title.replace(/\([^)]+\)/g, '').trim();
+  const query = encodeURIComponent('IU ' + cleanTitle);
+  try {
+    const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=song&limit=1`);
+    const data = await res.json();
+    if (data.results && data.results.length > 0) {
+      albumArt.src = data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
+    } else {
+      albumArt.src = STATE.song.cover || 'iuHeart-2x.gif';
+    }
+  } catch(e) {
+    albumArt.src = STATE.song.cover || 'iuHeart-2x.gif';
+  }
 }
 
 // ─── FEATURES: Alpha Browser & Autocomplete ───
 function buildAlphaBrowser() {
   const box = DOM.get('alphaBrowser') || document.createElement('div');
   box.id = 'alphaBrowser';
-  // CSS Inline condensado
   box.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;';
   
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(l => {

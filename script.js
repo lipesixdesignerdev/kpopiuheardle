@@ -118,38 +118,50 @@ async function finishGame(won) {
   DOM.get('resultSongName').textContent = STATE.song.title;
   DOM.get('resultAlbum').textContent = STATE.song.album;
 
-  // Reset album art visibility between games
+  // Reset album art — manage onerror fully in JS (no inline HTML handler)
   const albumArt = DOM.get('albumArt');
   const albumFallback = DOM.get('albumFallback');
   albumArt.style.display = '';
   albumFallback.style.display = 'none';
-  albumArt.src = '';
+  albumArt.onerror = () => { albumArt.style.display = 'none'; albumFallback.style.display = 'flex'; };
 
-  // Fetch artwork dynamically in browser (bypasses CDN hotlink block on Vercel)
-  // Multi-strategy search to maximize hit rate
+  // Fetch artwork via Deezer (better K-pop coverage, public CORS API)
   async function fetchArtwork() {
     const cleanTitle = STATE.song.title.replace(/\([^)]+\)/g, '').trim();
-    const strategies = [
-      `IU ${cleanTitle}`,
-      `IU ${STATE.song.title}`,
-      `IU ${STATE.song.album}`,
+    const queries = [
+      `artist:"IU" track:"${cleanTitle}"`,
+      `artist:"IU" track:"${STATE.song.title}"`,
+      `artist:"IU" album:"${STATE.song.album}"`,
     ];
-    for (const term of strategies) {
+    for (const q of queries) {
       try {
-        const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=song&country=kr&limit=5`);
+        const res = await fetch(`https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=3&output=json`);
         const data = await res.json();
-        if (data.results && data.results.length > 0) {
-          // Prefer results where artist name contains IU
-          const match = data.results.find(r => r.artistName && r.artistName.includes('IU')) || data.results[0];
-          if (match && match.artworkUrl100) {
-            return match.artworkUrl100.replace('100x100bb', '600x600bb');
-          }
+        if (data.data && data.data.length > 0) {
+          const cover = data.data[0].album?.cover_xl || data.data[0].album?.cover_big || data.data[0].album?.cover_medium;
+          if (cover) return cover;
         }
-      } catch(e) { /* try next strategy */ }
+      } catch(e) { /* try next */ }
     }
-    return STATE.song.cover || 'iuHeart-2x.gif';
+    // Fallback: iTunes
+    try {
+      const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent('IU ' + cleanTitle)}&entity=song&country=kr&limit=5`);
+      const data = await res.json();
+      if (data.results && data.results.length > 0) {
+        const match = data.results.find(r => r.artistName && r.artistName.includes('IU')) || data.results[0];
+        if (match && match.artworkUrl100) return match.artworkUrl100.replace('100x100bb', '600x600bb');
+      }
+    } catch(e) {}
+    return null; // triggers onerror → fallback emoji
   }
-  albumArt.src = await fetchArtwork();
+
+  const url = await fetchArtwork();
+  if (url) {
+    albumArt.src = url;
+  } else {
+    albumArt.style.display = 'none';
+    albumFallback.style.display = 'flex';
+  }
 }
 
 // ─── FEATURES: Alpha Browser & Autocomplete ───

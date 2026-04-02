@@ -1,0 +1,26 @@
+{
+  "name": "kpopiuheardle",
+  "version": "1.0.0",
+  "description": "",
+  "main": "database.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node build.js",
+    "dev": "npx http-server . -p 3799 --cors -o"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lipesixdesignerdev/kpopiuheardle.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/lipesixdesignerdev/kpopiuheardle/issues"
+  },
+  "homepage": "https://github.com/lipesixdesignerdev/kpopiuheardle#readme",
+  "devDependencies": {
+    "javascript-obfuscator": "^5.4.1"
+  }
+}

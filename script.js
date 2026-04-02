@@ -10,7 +10,7 @@ const CONFIG = {
   }
 };
 
-const STATE = { song: null, attempt: 0, guesses: [], isPlaying: false, audio: new Audio(), timer: null, over: false, lang: 'PT', theme: localStorage.getItem(CONFIG.KEYS.THEME) || 'dark' };
+const STATE = { song: null, attempt: 0, guesses: [], isPlaying: false, audio: new Audio(), timer: null, over: false, lang: 'PT', theme: localStorage.getItem(CONFIG.KEYS.THEME) || 'dark', artworkUrl: null, artworkPromise: null };
 const DOM = { get: id => document.getElementById(id), qs: s => document.querySelector(s), qsa: s => document.querySelectorAll(s) };
 const i18n = k => CONFIG.I18N[STATE.lang][k];
 
@@ -48,6 +48,50 @@ function setLanguage(l) {
   DOM.qsa('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.val === l));
 }
 
+// ─── AUDIO BLOB LOADER (hides mp3 filenames from Network tab) ───
+let _currentBlobUrl = null;
+async function loadAudioBlob(src) {
+  try {
+    if (_currentBlobUrl) { URL.revokeObjectURL(_currentBlobUrl); _currentBlobUrl = null; }
+    const res = await fetch(src);
+    const blob = await res.blob();
+    _currentBlobUrl = URL.createObjectURL(blob);
+    STATE.audio.src = _currentBlobUrl;
+  } catch(e) {
+    // fallback to direct src if fetch fails
+    STATE.audio.src = src;
+  }
+}
+
+// ─── ARTWORK PREFETCH ───
+async function fetchArtwork(song) {
+  const cleanTitle = song.title.replace(/\([^)]+\)/g, '').trim();
+  const queries = [
+    `artist:"IU" track:"${cleanTitle}"`,
+    `artist:"IU" track:"${song.title}"`,
+    `artist:"IU" album:"${song.album}"`,
+  ];
+  for (const q of queries) {
+    try {
+      const res = await fetch(`https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=3&output=json`);
+      const data = await res.json();
+      if (data.data && data.data.length > 0) {
+        const cover = data.data[0].album?.cover_xl || data.data[0].album?.cover_big || data.data[0].album?.cover_medium;
+        if (cover) return cover;
+      }
+    } catch(e) { /* try next */ }
+  }
+  try {
+    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent('IU ' + cleanTitle)}&entity=song&country=kr&limit=5`);
+    const data = await res.json();
+    if (data.results && data.results.length > 0) {
+      const match = data.results.find(r => r.artistName && r.artistName.includes('IU')) || data.results[0];
+      if (match && match.artworkUrl100) return match.artworkUrl100.replace('100x100bb', '600x600bb');
+    }
+  } catch(e) {}
+  return null;
+}
+
 // ─── GAME CORE ───
 function init() {
   if (typeof musicasIU === 'undefined') return alert("Erro: database.js não encontrado!");
@@ -55,8 +99,11 @@ function init() {
   if (STATE.isPlaying) pauseAudio();
   
   STATE.song = musicasIU[Math.floor(Math.random() * musicasIU.length)];
-  STATE.audio.src = STATE.song.file;
-  
+  STATE.artworkUrl = null;
+  // Prefetch artwork AND load audio blob simultaneously in background
+  STATE.artworkPromise = fetchArtwork(STATE.song).then(url => { STATE.artworkUrl = url; });
+  loadAudioBlob(STATE.song.file);
+
   DOM.get('waveform').innerHTML = '<div class="wave-bar" style="height:10px;"></div>'.repeat(25);
   buildAlphaBrowser();
   DOM.get('songInput').value = ''; DOM.get('timerFill').style.width = '0%'; DOM.get('timerLabel').textContent = '0.0s / 1s';
@@ -118,44 +165,16 @@ async function finishGame(won) {
   DOM.get('resultSongName').textContent = STATE.song.title;
   DOM.get('resultAlbum').textContent = STATE.song.album;
 
-  // Reset album art — manage onerror fully in JS (no inline HTML handler)
   const albumArt = DOM.get('albumArt');
   const albumFallback = DOM.get('albumFallback');
   albumArt.style.display = '';
   albumFallback.style.display = 'none';
   albumArt.onerror = () => { albumArt.style.display = 'none'; albumFallback.style.display = 'flex'; };
 
-  // Fetch artwork via Deezer (better K-pop coverage, public CORS API)
-  async function fetchArtwork() {
-    const cleanTitle = STATE.song.title.replace(/\([^)]+\)/g, '').trim();
-    const queries = [
-      `artist:"IU" track:"${cleanTitle}"`,
-      `artist:"IU" track:"${STATE.song.title}"`,
-      `artist:"IU" album:"${STATE.song.album}"`,
-    ];
-    for (const q of queries) {
-      try {
-        const res = await fetch(`https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=3&output=json`);
-        const data = await res.json();
-        if (data.data && data.data.length > 0) {
-          const cover = data.data[0].album?.cover_xl || data.data[0].album?.cover_big || data.data[0].album?.cover_medium;
-          if (cover) return cover;
-        }
-      } catch(e) { /* try next */ }
-    }
-    // Fallback: iTunes
-    try {
-      const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent('IU ' + cleanTitle)}&entity=song&country=kr&limit=5`);
-      const data = await res.json();
-      if (data.results && data.results.length > 0) {
-        const match = data.results.find(r => r.artistName && r.artistName.includes('IU')) || data.results[0];
-        if (match && match.artworkUrl100) return match.artworkUrl100.replace('100x100bb', '600x600bb');
-      }
-    } catch(e) {}
-    return null; // triggers onerror → fallback emoji
-  }
-
-  const url = await fetchArtwork();
+  // Artwork was prefetched during gameplay — show instantly
+  // Wait for the promise only if it's still pending (e.g. very fast finish)
+  await STATE.artworkPromise;
+  const url = STATE.artworkUrl;
   if (url) {
     albumArt.src = url;
   } else {

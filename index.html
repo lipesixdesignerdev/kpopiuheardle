@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>IU Heardle</title>
+  <title>IU Heardle — Adivinhe a Música</title>
+  <meta name="description" content="O jogo de adivinhar músicas da IU. Ouça o trecho e descubra o título antes de acabar as tentativas!"/>
 
+  <!-- Poppins (HooBank-style) + fallback -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
 </head>
@@ -21,8 +24,8 @@
   </div>
   <div class="header-actions">
     <div class="lang-switcher" id="langSwitcher"></div>
-    <button class="icon-btn" id="statsBtn">📊</button>
-    <button class="icon-btn" id="newBtn">🔄</button>
+    <button class="icon-btn" id="statsBtn" title="Estatísticas">📊</button>
+    <button class="icon-btn" id="newBtn" title="Nova música">🔄</button>
   </div>
 </header>
 
@@ -32,9 +35,9 @@
   <div class="player-card">
     <div class="waveform" id="waveform"></div>
     <button class="play-btn" id="playBtn">▶</button>
-    <p id="statusText" style="font-size:12px;color:var(--muted);">Pronto! Clique ▶</p>
+    <p id="statusText" style="font-size:12px;color:var(--muted);font-weight:500;letter-spacing:0.3px;">Pronto! Clique ▶</p>
     <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
-    <div id="timerLabel" style="font-size:11px;color:var(--muted);width:100%;text-align:right;">0.0s / 1s</div>
+    <div id="timerLabel" style="font-size:11px;color:var(--muted);width:100%;text-align:right;font-weight:500;">0.0s / 1s</div>
   </div>
 
   <div class="guesses-list" id="guessesList"></div>
@@ -54,7 +57,7 @@
 <div class="modal-overlay" id="statsModal">
   <div class="modal-content">
     <p class="modal-title" id="statsTitle">📊</p>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:4px;" id="statsSubtitle"></p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:500;" id="statsSubtitle"></p>
     <div class="stats-grid" id="statsGrid"></div>
     <div class="dist-section" id="distSection"></div>
     <button id="statsResetBtn" class="btn btn-skip" style="margin-top:16px;"></button>
@@ -65,13 +68,13 @@
 <!-- RESULT MODAL -->
 <div class="modal-overlay" id="resultModal">
   <div class="modal-content">
-    <h2 id="resultTitle" style="font-family:'Playfair Display';"></h2>
-    <div id="albumArtWrapper" style="width:180px;height:180px;margin:20px auto;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--border);display:flex;align-items:center;justify-content:center;">
+    <h2 id="resultTitle" style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;"></h2>
+    <div id="albumArtWrapper" style="width:180px;height:180px;margin:16px auto;border-radius:16px;overflow:hidden;border:1px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;">
       <img id="albumArt" src="" class="album-art">
-      <div id="albumFallback" style="display:none;align-items:center;justify-content:center;font-size:48px;width:100%;">🎵</div>
+      <div id="albumFallback" style="display:none;align-items:center;justify-content:center;font-size:52px;width:100%;">🎵</div>
     </div>
-    <p id="resultSongName" style="font-size:20px;color:var(--accent);font-weight:bold;"></p>
-    <p id="resultAlbum" style="color:var(--muted);font-size:14px;margin-bottom:20px;"></p>
+    <p id="resultSongName" style="font-size:18px;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;"></p>
+    <p id="resultAlbum" style="color:var(--muted);font-size:13px;margin-bottom:20px;font-weight:500;"></p>
     <button id="againBtn" class="btn btn-confirm"></button>
   </div>
 </div>
@@ -79,10 +82,11 @@
 <!-- THEME SWITCHER -->
 <div class="theme-switcher">
   <div class="theme-options" id="themeOptions"></div>
-  <button class="theme-toggle-btn" id="themeToggleBtn" title="Mudar tema">💜</button>
+  <button class="theme-toggle-btn" id="themeToggleBtn" title="Mudar tema">🎨</button>
 </div>
 
-<script src="database.js"></script>
-<script src="script.js"></script>
+<script src="dist/guard.js"></script>
+<script src="dist/database.js"></script>
+<script src="dist/script.js"></script>
 </body>
 </html>

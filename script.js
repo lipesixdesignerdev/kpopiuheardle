@@ -41,6 +41,7 @@ function setTheme(t) {
 
 function setLanguage(l) {
   STATE.lang = l;
+  document.documentElement.lang = l.toLowerCase();
   const txt = CONFIG.I18N[l];
   DOM.get('statusText').textContent = txt.status; DOM.get('songInput').placeholder = txt.placeholder;
   DOM.get('skipBtn').textContent = txt.skip; DOM.get('confirmBtn').textContent = txt.confirm;

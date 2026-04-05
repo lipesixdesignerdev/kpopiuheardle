@@ -4,9 +4,9 @@ const CONFIG = {
   KEYS: { STATS: 'iu-heardle-stats', THEME: 'iu-heardle-theme' },
   THEMES: ['dark', 'light', 'neon', 'sepia', 'abyss'],
   I18N: {
-    PT: { status: "Pronto! Clique ▶", placeholder: "seu palpite aqui…", skip: "⏭ Pular (+1s)", confirm: "✓ Confirmar", won: "🎉 Você acertou!", lost: "😔 Não foi dessa vez!", playAgain: "🔄 Jogar Novamente", stats: "📊 Estatísticas", labels: ["Partidas", "Vitórias", "Sequência", "Melhor"], dist: "Distribuição", reset: "🗑 Resetar", close: "Fechar", pct: "de aproveitamento" },
-    EN: { status: "Ready! Click ▶", placeholder: "your guess here…", skip: "⏭ Skip (+1s)", confirm: "✓ Confirm", won: "🎉 You got it!", lost: "😔 Not this time!", playAgain: "🔄 Play Again", stats: "📊 Statistics", labels: ["Played", "Wins", "Streak", "Best"], dist: "Distribution", reset: "🗑 Reset", close: "Close", pct: "win rate" },
-    ES: { status: "¡Listo! Clic ▶", placeholder: "tu respuesta aquí…", skip: "⏭ Saltar (+1s)", confirm: "✓ Confirmar", won: "🎉 ¡Lo lograste!", lost: "😔 ¡Otra vez será!", playAgain: "🔄 Jugar de Nuevo", stats: "📊 Estadísticas", labels: ["Partidas", "Victorias", "Racha", "Mejor"], dist: "Distribución", reset: "🗑 Reiniciar", close: "Cerrar", pct: "de rendimiento" }
+    PT: { title: "IU Heardle — Adivinhe a Música", status: "Pronto! Clique ▶", placeholder: "seu palpite aqui…", skip: "⏭ Pular (+1s)", confirm: "✓ Confirmar", won: "🎉 Você acertou!", lost: "😔 Não foi dessa vez!", playAgain: "🔄 Jogar Novamente", stats: "📊 Estatísticas", labels: ["Partidas", "Vitórias", "Sequência", "Melhor"], dist: "Distribuição", reset: "🗑 Resetar", close: "Fechar", pct: "de aproveitamento" },
+    EN: { title: "IU Heardle — Guess the Song", status: "Ready! Click ▶", placeholder: "your guess here…", skip: "⏭ Skip (+1s)", confirm: "✓ Confirm", won: "🎉 You got it!", lost: "😔 Not this time!", playAgain: "🔄 Play Again", stats: "📊 Statistics", labels: ["Played", "Wins", "Streak", "Best"], dist: "Distribution", reset: "🗑 Reset", close: "Close", pct: "win rate" },
+    ES: { title: "IU Heardle — Adivina la Canción", status: "¡Listo! Clic ▶", placeholder: "tu respuesta aquí…", skip: "⏭ Saltar (+1s)", confirm: "✓ Confirmar", won: "🎉 ¡Lo lograste!", lost: "😔 ¡Otra vez será!", playAgain: "🔄 Jugar de Nuevo", stats: "📊 Estadísticas", labels: ["Partidas", "Victorias", "Racha", "Mejor"], dist: "Distribución", reset: "🗑 Reiniciar", close: "Cerrar", pct: "de rendimiento" }
   }
 };
 
@@ -43,6 +43,7 @@ function setLanguage(l) {
   STATE.lang = l;
   document.documentElement.lang = l.toLowerCase();
   const txt = CONFIG.I18N[l];
+  document.title = txt.title;
   DOM.get('statusText').textContent = txt.status; DOM.get('songInput').placeholder = txt.placeholder;
   DOM.get('skipBtn').textContent = txt.skip; DOM.get('confirmBtn').textContent = txt.confirm;
   DOM.get('againBtn').textContent = txt.playAgain;

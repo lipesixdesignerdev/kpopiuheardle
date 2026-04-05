@@ -71,12 +71,19 @@ async function fetchArtwork(song) {
     `artist:"IU" track:"${song.title}"`,
     `artist:"IU" album:"${song.album}"`,
   ];
+  const fetchDeezerJSONP = (q) => new Promise((resolve) => {
+    const cb = 'dz_' + Math.floor(Math.random()*1000000);
+    window[cb] = (data) => { delete window[cb]; document.head.removeChild(s); resolve(data); };
+    const s = document.createElement('script');
+    s.src = `https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=3&output=jsonp&callback=${cb}`;
+    s.onerror = () => { delete window[cb]; document.head.removeChild(s); resolve({data:[]}); };
+    document.head.appendChild(s);
+  });
+
   for (const q of queries) {
     try {
-      const targetUrl = `https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=3&output=json`;
-      const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
-      const data = await res.json();
-      if (data.data && data.data.length > 0) {
+      const data = await fetchDeezerJSONP(q);
+      if (data && data.data && data.data.length > 0) {
         const cover = data.data[0].album?.cover_xl || data.data[0].album?.cover_big || data.data[0].album?.cover_medium;
         if (cover) return cover;
       }

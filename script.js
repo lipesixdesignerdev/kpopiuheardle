@@ -73,7 +73,8 @@ async function fetchArtwork(song) {
   ];
   for (const q of queries) {
     try {
-      const res = await fetch(`https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=3&output=json`);
+      const targetUrl = `https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=3&output=json`;
+      const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
       const data = await res.json();
       if (data.data && data.data.length > 0) {
         const cover = data.data[0].album?.cover_xl || data.data[0].album?.cover_big || data.data[0].album?.cover_medium;

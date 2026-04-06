@@ -4,9 +4,9 @@ const CONFIG = {
   KEYS: { STATS: 'iu-heardle-stats', THEME: 'iu-heardle-theme' },
   THEMES: ['dark', 'light', 'neon', 'sepia', 'abyss'],
   I18N: {
-    PT: { title: "IU Heardle — Adivinhe a Música", status: "Pronto! Clique ▶", placeholder: "seu palpite aqui…", skip: "⏭ Pular (+1s)", confirm: "✓ Confirmar", won: "🎉 Você acertou!", lost: "😔 Não foi dessa vez!", playAgain: "🔄 Jogar Novamente", stats: "📊 Estatísticas", labels: ["Partidas", "Vitórias", "Sequência", "Melhor"], dist: "Distribuição", reset: "🗑 Resetar", close: "Fechar", pct: "de aproveitamento", credit: "Feito com ❤ por" },
-    EN: { title: "IU Heardle — Guess the Song", status: "Ready! Click ▶", placeholder: "your guess here…", skip: "⏭ Skip (+1s)", confirm: "✓ Confirm", won: "🎉 You got it!", lost: "😔 Not this time!", playAgain: "🔄 Play Again", stats: "📊 Statistics", labels: ["Played", "Wins", "Streak", "Best"], dist: "Distribution", reset: "🗑 Reset", close: "Close", pct: "win rate", credit: "Made with ❤ by" },
-    ES: { title: "IU Heardle — Adivina la Canción", status: "¡Listo! Clic ▶", placeholder: "tu respuesta aquí…", skip: "⏭ Saltar (+1s)", confirm: "✓ Confirmar", won: "🎉 ¡Lo lograste!", lost: "😔 ¡Otra vez será!", playAgain: "🔄 Jugar de Nuevo", stats: "📊 Estadísticas", labels: ["Partidas", "Victorias", "Racha", "Mejor"], dist: "Distribución", reset: "🗑 Reiniciar", close: "Cerrar", pct: "de rendimiento", credit: "Hecho con ❤ por" }
+    PT: { title: "IU Heardle — Adivinhe a Música", status: "Pronto! Clique ▶", placeholder: "seu palpite aqui…", skip: "⏭ Pular (+1s)", confirm: "✓ Confirmar", won: "🎉 Você acertou!", lost: "😔 Não foi dessa vez!", playAgain: "🔄 Jogar Novamente", stats: "📊 Estatísticas", labels: ["Partidas", "Vitórias", "Sequência", "Melhor"], dist: "Distribuição", reset: "🗑 Resetar", close: "Fechar", pct: "de aproveitamento", credit: "Feito com ❤ por", copied: "Copiado para a área de transferência!" },
+    EN: { title: "IU Heardle — Guess the Song", status: "Ready! Click ▶", placeholder: "your guess here…", skip: "⏭ Skip (+1s)", confirm: "✓ Confirm", won: "🎉 You got it!", lost: "😔 Not this time!", playAgain: "🔄 Play Again", stats: "📊 Statistics", labels: ["Played", "Wins", "Streak", "Best"], dist: "Distribution", reset: "🗑 Reset", close: "Close", pct: "win rate", credit: "Made with ❤ by", copied: "Copied to clipboard!" },
+    ES: { title: "IU Heardle — Adivina la Canción", status: "¡Listo! Clic ▶", placeholder: "tu respuesta aquí…", skip: "⏭ Saltar (+1s)", confirm: "✓ Confirmar", won: "🎉 ¡Lo lograste!", lost: "😔 ¡Otra vez será!", playAgain: "🔄 Jugar de Nuevo", stats: "📊 Estadísticas", labels: ["Partidas", "Victorias", "Racha", "Mejor"], dist: "Distribución", reset: "🗑 Reiniciar", close: "Cerrar", pct: "de rendimiento", credit: "Hecho con ❤ por", copied: "¡Copiado al portapapeles!" }
   }
 };
 
@@ -32,11 +32,20 @@ function initUI() {
   setLanguage(STATE.lang);
 }
 
+const THEME_ICONS = {
+  dark: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" /></svg>',
+  light: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" /></svg>',
+  neon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>',
+  sepia: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z" /></svg>',
+  abyss: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09l2.846.813-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" /></svg>'
+};
+
 function setTheme(t) {
   STATE.theme = t; document.documentElement.setAttribute('data-theme', t);
   localStorage.setItem(CONFIG.KEYS.THEME, t);
   DOM.qsa('.theme-option').forEach(b => b.classList.toggle('active', b.dataset.theme === t));
   DOM.get('themeOptions').classList.remove('visible');
+  if(DOM.get('themeToggleBtn')) DOM.get('themeToggleBtn').innerHTML = THEME_ICONS[t] || THEME_ICONS.dark;
 }
 
 function setLanguage(l) {
@@ -148,7 +157,14 @@ function nextTurn(guessVal, skipped = false) {
   STATE.guesses.push({ title: skipped ? 'Pulou' : guessVal, correct, skipped });
   
   if (correct || !skipped) DOM.get('songInput').value = '';
-  if (!correct) STATE.attempt++;
+  
+  if (!correct) {
+    STATE.attempt++;
+    const inp = DOM.get('songInput');
+    inp.classList.remove('shake');
+    void inp.offsetWidth; // reset anim
+    inp.classList.add('shake');
+  }
   
   updateGameView();
   if (correct || STATE.attempt >= 6) finishGame(correct);
@@ -182,16 +198,26 @@ async function finishGame(won) {
   albumFallback.style.display = 'none';
   albumArt.onerror = () => { albumArt.style.display = 'none'; albumFallback.style.display = 'flex'; };
 
+  if (won && typeof confetti === 'function') confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#00d4ff', '#0070f3', '#ff00ff', '#ffffff'] });
+  if (DOM.get('shareBtn')) DOM.get('shareBtn').style.display = 'flex';
+
   // Artwork was prefetched during gameplay — show instantly
   // Wait for the promise only if it's still pending (e.g. very fast finish)
   await STATE.artworkPromise;
   const url = STATE.artworkUrl;
   if (url) {
     albumArt.src = url;
+    if (DOM.get('ambientBg')) DOM.get('ambientBg').src = url;
   } else {
     albumArt.style.display = 'none';
     albumFallback.style.display = 'flex';
   }
+}
+
+function shareResults() {
+  const blocks = STATE.guesses.map(g => g.correct ? '🟩' : g.skipped ? '🟨' : '🟥').join('');
+  const text = `🎵 IU Heardle - ${STATE.guesses[STATE.guesses.length-1]?.correct ? STATE.attempt + 1 : 'X'}/6\n${blocks}\n👉 https://kpopiuheardle.vercel.app`;
+  navigator.clipboard.writeText(text).then(() => alert(i18n('copied') || "Copiado!"));
 }
 
 // ─── FEATURES: Alpha Browser & Autocomplete ───
@@ -274,6 +300,7 @@ DOM.get('statsBtn').onclick = () => {
 };
 DOM.get('statsCloseBtn').onclick = () => DOM.get('statsModal').classList.remove('show');
 DOM.get('statsResetBtn').onclick = () => confirm('Resetar?') && localStorage.removeItem(CONFIG.KEYS.STATS) | openStats();
-DOM.get('againBtn').onclick = DOM.get('newBtn').onclick = () => { DOM.get('resultModal').classList.remove('show'); init(); };
+DOM.get('againBtn').onclick = DOM.get('newBtn').onclick = () => { DOM.get('resultModal').classList.remove('show'); DOM.get('ambientBg').src=''; init(); };
+if(DOM.get('shareBtn')) DOM.get('shareBtn').onclick = shareResults;
 
 window.onload = () => { initUI(); init(); };

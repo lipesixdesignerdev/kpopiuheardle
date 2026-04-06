@@ -491,6 +491,19 @@ header {
   color: var(--muted);
 }
 
+.shake {
+  animation: hitShake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+  border-color: var(--wrong) !important;
+  box-shadow: 0 0 0 2px rgba(255,77,109,0.3) !important;
+}
+
+@keyframes hitShake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(3px); }
+  30%, 50%, 70% { transform: translateX(-5px); }
+  40%, 60% { transform: translateX(5px); }
+}
+
 /* ─── AUTOCOMPLETE ─── */
 .autocomplete {
   position: absolute;

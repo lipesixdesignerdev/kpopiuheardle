@@ -10,7 +10,14 @@ const CONFIG = {
   }
 };
 
-const STATE = { song: null, attempt: 0, guesses: [], isPlaying: false, audio: new Audio(), timer: null, over: false, lang: 'PT', theme: localStorage.getItem(CONFIG.KEYS.THEME) || 'dark', artworkUrl: null, artworkPromise: null };
+function getSystemLanguage() {
+  const sysLang = navigator.language || navigator.userLanguage;
+  if (sysLang.toLowerCase().startsWith('pt')) return 'PT';
+  if (sysLang.toLowerCase().startsWith('es')) return 'ES';
+  return 'EN';
+}
+
+const STATE = { song: null, attempt: 0, guesses: [], isPlaying: false, audio: new Audio(), timer: null, over: false, lang: localStorage.getItem('iu-heardle-lang') || getSystemLanguage(), theme: localStorage.getItem(CONFIG.KEYS.THEME) || 'dark', artworkUrl: null, artworkPromise: null };
 const DOM = { get: id => document.getElementById(id), qs: s => document.querySelector(s), qsa: s => document.querySelectorAll(s) };
 const i18n = k => CONFIG.I18N[STATE.lang][k];
 
@@ -50,6 +57,7 @@ function setTheme(t) {
 
 function setLanguage(l) {
   STATE.lang = l;
+  localStorage.setItem('iu-heardle-lang', l);
   document.documentElement.lang = l.toLowerCase();
   const txt = CONFIG.I18N[l];
   document.title = txt.title;
